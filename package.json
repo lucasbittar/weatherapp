@@ -4,7 +4,7 @@
   "description": "simple weather app based on user's location",
   "main": "webpack.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack-dev-server --progress --colors --content-base app/"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/lucasbittar/weatherapp/issues"
   },
-  "homepage": "https://github.com/lucasbittar/weatherapp#readme"
+  "homepage": "https://github.com/lucasbittar/weatherapp#readme",
+  "devDependencies": {
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.2.1"
+  }
 }
