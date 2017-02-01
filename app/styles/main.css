@@ -143,8 +143,8 @@ body {
 }
 
 .icon {
-  position: relative;
-  top: 18px;
+  /* position: relative; */
+  /* top: 18px; */
   margin-right: 20px;
 }
 
@@ -177,7 +177,10 @@ body {
   font-weight: 700;
   position: relative;
   height: 55px;
-  margin: 10px 0px 20px 0px;
+  margin: 40px 0px 0px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .units {

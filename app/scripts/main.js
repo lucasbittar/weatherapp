@@ -16,7 +16,6 @@ import css from '../styles/main.css';
 
   // Vendor
   var $ = require('jquery');
-  var skycons = require('skycons');
 
   // Services
   var location = require('../scripts/services/location.service');
@@ -25,7 +24,7 @@ import css from '../styles/main.css';
   var format = require('../scripts/services/format.service');
 
   // Variables
-  var icons = new skycons({"color": "white"});
+  var icons = new Skycons({"color": "white"});
   var locationInfo;
   var weatherInfo;
   var imageInfo;
@@ -46,24 +45,23 @@ import css from '../styles/main.css';
   .then(retrieveLocationInfo, error);
 
   function retrieveLocationInfo(data) {
-    console.log('Location Info', data);
+    // console.log('Location Info', data);
     locationInfo = data;
     $.when(
       weather.getInfo(data.latitude, data.longitude),
-      image.search(data.stateName)
+      image.search(data.cityName)
     ).then(success, error);
   }
 
   function success(weatherData, imageData) {
-    console.log('Weather Info', weatherData);
-    console.log('Image Info', imageData);
+    // console.log('Weather Info', weatherData);
+    // console.log('Image Info', imageData);
     weatherInfo = weatherData;
     imageInfo = imageData;
     render();
   }
 
   function animate() {
-
     // Elements to animate
     var elements = ["greeting", "city", "temp", "desc", "units"];
 
@@ -85,6 +83,8 @@ import css from '../styles/main.css';
       $('.weather-border').css('background-color', 'rgba(0,0,0,.2)');
     }, 1000);
 
+    $('.weather-bg').css('background', 'url(' + imageInfo.contentUrl + ') no-repeat 50% center');
+    $('.weather-bg-animation').css('background', 'linear-gradient(344deg, rgba(255,255,255,0), #' + format.getFormat().backgroundColor + ')');
   }
 
   function bindEvents() {
@@ -92,7 +92,6 @@ import css from '../styles/main.css';
   }
 
   function toggleUnit() {
-
     var unitTarget = $(this).attr('data-unit');
 
     if( !$(this).hasClass('active') ) {
@@ -125,11 +124,9 @@ import css from '../styles/main.css';
       }
 
     }
-
   }
 
   function bindData() {
-
     var condition = weatherInfo.currently.summary;
     var temp = weatherInfo.currently.apparentTemperature;
     var icon = weatherInfo.currently.icon;
@@ -141,6 +138,8 @@ import css from '../styles/main.css';
     $greeting.html(format.getFormat().greeting);
     $desc.html('<canvas id="icon" class="icon" width="64" height="64"></canvas>' + condition);
 
+    icons.add('icon', icon);
+    icons.play();
   }
 
   function render() {
@@ -149,9 +148,6 @@ import css from '../styles/main.css';
     bindData();
     bindEvents();
     animate();
-
-    // icons.add('icon', icon);
-    // icons.play();
 
   }
 

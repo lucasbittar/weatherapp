@@ -11,14 +11,11 @@
   var $ = require('jquery');
 
   // Calls Google Images API and returns random image
-  var searchImage = function(stateName, currentTime) {
-
-    console.log('Fetching weather info...');
+  var searchImage = function(query) {
 
     var deferred = $.Deferred();
-    var customImageVars = '&imgsz=xxlarge&imgc=color&imgtype=photo&rsz=8&as_filetype=jpg';
-    var fullQuery = stateName + ' city ' + (currentTime || '');
-    console.log('Fetching image for: ' + fullQuery);
+    var customImageVars = '&size=wallpaper';
+    console.log('Fetching image for: ' + query);
 
     function error(err) {
       alert(err.message);
@@ -27,28 +24,22 @@
 
     function imageInfo(data) {
 
-      // var condition = data.currently.summary;
-      // var temp = data.currently.apparentTemperature;
-      // var icon = data.currently.icon;
-      // var dateHMTL = '<span class="date" style="color: #' + dateColor + '"> ' + days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear() + '</span>';
-      // desc = condition.text;
+      var max = data.value.length;
+      var random = randomize(max, 0);
 
-      // $('.city').html(cityName + ', ' + stateName + ' • ' + dateHMTL);
-      // $('.temp-f').html(Math.floor(temp) + '˚F');
-      // $('.temp-c').html(fahrenheitCelsius(temp) + '˚C');
-      // $('.desc').html('<canvas id="icon" class="icon" width="64" height="64"></canvas>' + condition);
-
-      // icons.add('icon', icon);
-      // icons.play();
-
-      deferred.resolve(data);
+      deferred.resolve(data.value[random]);
 
     }
 
+    function randomize(max, min) {
+      return Math.floor(Math.random()*(max-min+1)+min);
+    }
+
     $.ajax({
-      url:"https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + fullQuery + customImageVars,
-      crossDomain: true,
-      dataType: "jsonp",
+      url:'https://api.cognitive.microsoft.com/bing/v5.0/images/search?q=' + query + customImageVars,
+      headers: {
+        'Ocp-Apim-Subscription-Key': 'f29b7fb1a829491ab00913b629ce99e0'
+      },
       success: imageInfo,
       error: error
     });
