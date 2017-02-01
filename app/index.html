@@ -3,9 +3,29 @@
   <head>
     <meta charset="UTF-8">
     <title>Weather App</title>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js"></script>
   </head>
   <body>
-    <h1>Weaaaaaather App</h1>
+
+    <div class="weather-border"></div>
+    <div class="weather-bg-animation"></div>
+    <div class="weather-bg">
+      <span class="loader elements-show">fetching your location...</span>
+      <h1 class="greeting elements-hidden"></h1>
+      <h2 class="city elements-hidden"></h2>
+      <div class="temp elements-hidden">
+        <h3 class="temp-f"></h3>
+        <h3 class="temp-c"></h3>
+      </div>
+      <h4 class="desc elements-hidden"></h4>
+      <div class="units elements-hidden">
+          <div class="unit active" data-unit="f">˚F</div>
+          <div class="unit" data-unit="c">˚C</div>
+      </div>
+    </div>
+
+    <div class="credits">created by <a href="http://lucasbittar.com" target="_blank">Lucas Bittar</a>.</div>
+
     <script type="text/javascript" src="app.js"></script>
   </body>
 </html>
