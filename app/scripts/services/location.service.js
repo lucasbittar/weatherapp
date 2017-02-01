@@ -12,7 +12,7 @@
   var _ = require('lodash');
 
   // Fetches user's location and returns longitude and latitude
-  function getUserLocation() {
+  var getLocationCoordinates = function() {
 
     console.log('Fetching location...');
 
@@ -43,19 +43,19 @@
 
   }
 
-  // Fetches user's location
-  var getLocation = function() {
+  // Fetches user's location and returns city, state and abbreviation based on longitude and latitude
+  var getLocationInfo = function() {
 
     var deferred = $.Deferred();
     var cityName,
         stateName,
         stateAbbreviation;
 
-    $.when(getUserLocation()).then(success, error);
+    $.when(getLocationCoordinates()).then(success, error);
 
-    function success(location) {
+    function success(coords) {
       var geocoder = new google.maps.Geocoder();
-      var latlng = new google.maps.LatLng(location.latitude, location.longitude);
+      var latlng = new google.maps.LatLng(coords.latitude, coords.longitude);
 
       geocoder.geocode({
         'latLng': latlng
@@ -80,11 +80,12 @@
         var locationInfo = {
           cityName: cityName,
           stateName: stateName,
-          stateAbbreviation: stateAbbreviation
+          stateAbbreviation: stateAbbreviation,
+          latitude: coords.latitude,
+          longitude: coords.longitude
         }
 
         deferred.resolve(locationInfo);
-        // console.log('city', cityName, 'state', stateName);
 
       });
     }
@@ -95,11 +96,11 @@
 
     return deferred.promise();
 
-
   }
 
   module.exports = {
-    getLocation: getLocation
+    getCoordinates: getLocationCoordinates,
+    getInfo: getLocationInfo
   }
 
 })();
