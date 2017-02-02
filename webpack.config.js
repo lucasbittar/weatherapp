@@ -4,11 +4,13 @@
  * Created: 20170131
  */
 
-module.exports = {
-  context: __dirname + '/app',
+var path = require('path');
+
+var config = {
+  context: path.resolve(__dirname + '/app'),
   entry: './scripts/main.js',
   output: {
-    path: __dirname + '/app',
+    path: path.resolve(__dirname + '/public'),
     filename: 'app.js'
   },
   module: {
@@ -24,3 +26,5 @@ module.exports = {
     ]
   }
 }
+
+module.exports = config;
