@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Weather App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAqgcBs-ejRkPSeddtReKtBZdREAmKoEdY"></script>
+    <link href='http://fonts.googleapis.com/css?family=Noto+Serif:400,700' rel='stylesheet' type='text/css'>
+    <link rel="shortcut icon" href="favicon.ico">
+  </head>
+  <body>
+
+    <div class="weather-border"></div>
+    <div class="weather-bg-animation"></div>
+    <div class="weather-bg">
+      <span class="loader elements-show">fetching your location...</span>
+      <h1 class="greeting elements-hidden"></h1>
+      <h2 class="city elements-hidden"></h2>
+      <div class="temp elements-hidden">
+        <h3 class="temp-f"></h3>
+        <h3 class="temp-c"></h3>
+      </div>
+      <h4 class="desc elements-hidden"></h4>
+      <div class="units elements-hidden">
+          <div class="unit active" data-unit="f">˚F</div>
+          <div class="unit" data-unit="c">˚C</div>
+      </div>
+    </div>
+
+    <div class="credits">created by <a href="http://lucasbittar.com" target="_blank">Lucas Bittar</a>.</div>
+
+    <script type="text/javascript" src="vendor/skycons.js"></script>
+    <script type="text/javascript" src="app.js"></script>
+  </body>
+</html>
