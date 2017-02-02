@@ -18,10 +18,10 @@ import css from '../styles/main.css';
   var $ = require('jquery');
 
   // Services
-  var location = require('../scripts/services/location.service');
-  var weather = require('../scripts/services/weather.service');
-  var image = require('../scripts/services/image.service');
-  var format = require('../scripts/services/format.service');
+  var location = require('./services/location.service');
+  var weather = require('./services/weather.service');
+  var image = require('./services/image.service');
+  var format = require('./services/format.service');
 
   // Variables
   var icons = new Skycons({"color": "white"});
