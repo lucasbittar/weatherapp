@@ -4,13 +4,13 @@
  * Created: 20170131
  */
 
-var path = require('path');
+var webpack = require('webpack');
 
 var config = {
-  context: path.resolve(__dirname + '/app'),
+  context: __dirname + '/app',
   entry: './scripts/main.js',
   output: {
-    path: path.resolve(__dirname + '/public'),
+    path: __dirname + '/public',
     filename: 'app.js'
   },
   module: {
@@ -20,7 +20,7 @@ var config = {
         use: [ 'style-loader', 'css-loader' ]
       },
       {
-        test: /\.(jpe?g|png|gif|svg)$/i,
+        test: /\.(jpg?g|png|gif|svg)$/i,
         use: 'url-loader?limit=10000!img-loader?progressive=true'
       }
     ]
