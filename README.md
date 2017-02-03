@@ -4,4 +4,9 @@ Simple and basic weather app (still in beta version though).
 ### Project link ###
 [Launch Project]
 
-[Launch Project]: http://weather.lucasbittar.rocks/ "WeatherApp"
+### Update ###
+* Complete code refactor using Javascript Design Pattern
+* Replace Grunt with webpack
+* Improved search image API
+
+[Launch Project]: https://lucasbittar.github.io/weatherapp/ "WeatherApp"
