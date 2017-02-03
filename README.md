@@ -5,7 +5,7 @@ Simple and basic weather app (still in beta version though).
 [Launch Project]
 
 ### Update ###
-* Complete code refactor using Javascript Design Pattern
+* Complete code refactor using Modular Javascript Design Pattern
 * Replace Grunt with webpack
 * Improved search image API
 
