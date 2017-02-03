@@ -5,6 +5,7 @@
  */
 
 var webpack = require('webpack');
+var UglifyJsPlugin = require('uglify-js-plugin');
 
 var config = {
   context: __dirname + '/app',
@@ -24,7 +25,14 @@ var config = {
         use: 'url-loader?limit=10000!img-loader?progressive=true'
       }
     ]
-  }
+  },
+  plugins: [
+    new UglifyJsPlugin({
+      compress: false,
+      sourceMap: true,
+      debug: true
+    })
+  ]
 }
 
 module.exports = config;
