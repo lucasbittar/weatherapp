@@ -10,6 +10,7 @@ var UglifyJsPlugin = require('uglify-js-plugin');
 var config = {
   context: __dirname + '/app',
   entry: './scripts/main.js',
+  devtool: 'source-map',
   output: {
     path: __dirname + '/public',
     filename: 'app.js'
@@ -29,7 +30,6 @@ var config = {
   plugins: [
     new UglifyJsPlugin({
       compress: false,
-      sourceMap: true,
       debug: true
     })
   ]
