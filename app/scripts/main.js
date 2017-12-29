@@ -8,7 +8,6 @@
 import css from '../styles/main.css';
 
 (function() {
-
   'use strict';
 
   // Simple console.log
@@ -24,7 +23,7 @@ import css from '../styles/main.css';
   var format = require('./services/format.service');
 
   // Variables
-  var icons = new Skycons({"color": "white"});
+  var icons = new Skycons({ color: 'white' });
   var locationInfo;
   var weatherInfo;
   var imageInfo;
@@ -39,10 +38,7 @@ import css from '../styles/main.css';
   var $unit = $('.unit');
 
   // Starts application by fetching user's current location
-  $.when(
-    location.getInfo()
-  )
-  .then(retrieveLocationInfo, error);
+  $.when(location.getInfo()).then(retrieveLocationInfo, error);
 
   function retrieveLocationInfo(data) {
     // console.log('Location Info', data);
@@ -63,28 +59,34 @@ import css from '../styles/main.css';
 
   function animate() {
     // Elements to animate
-    var elements = ["greeting", "city", "temp", "desc", "units"];
+    var elements = ['greeting', 'city', 'temp', 'desc', 'units'];
 
     $('.loader').removeClass('elements-show');
     $('.loader').addClass('elements-hidden');
 
     $('.elements-hidden').each(function(i) {
-
       var toAnimate = $('.' + elements[i]);
 
       setTimeout(function() {
         toAnimate.removeClass('elements-hidden');
         toAnimate.addClass('elements-show');
       }, 50 * (i + 1));
-
     });
 
     setTimeout(function() {
       $('.weather-border').css('background-color', 'rgba(0,0,0,.2)');
     }, 1000);
 
-    $('.weather-bg').css('background', 'url(' + imageInfo.contentUrl + ') no-repeat 50% center');
-    $('.weather-bg-animation').css('background', 'linear-gradient(344deg, rgba(255,255,255,0), #' + format.getFormat().backgroundColor + ')');
+    $('.weather-bg').css(
+      'background',
+      'url(' + imageInfo.webformatURL + ') no-repeat 50% center'
+    );
+    $('.weather-bg-animation').css(
+      'background',
+      'linear-gradient(344deg, rgba(255,255,255,0), #' +
+        format.getFormat().backgroundColor +
+        ')'
+    );
   }
 
   function bindEvents() {
@@ -94,35 +96,29 @@ import css from '../styles/main.css';
   function toggleUnit() {
     var unitTarget = $(this).attr('data-unit');
 
-    if( !$(this).hasClass('active') ) {
-
+    if (!$(this).hasClass('active')) {
       $unit.removeClass('active');
       $(this).addClass('active');
 
-      if ( unitTarget == 'c' ) {
-
+      if (unitTarget == 'c') {
         $tempC.css({
-          'transform': 'translateY(0px)',
-          'opacity': 1
+          transform: 'translateY(0px)',
+          opacity: 1,
         });
         $tempF.css({
-          'transform': 'translateY(15px)',
-          'opacity': 0
+          transform: 'translateY(15px)',
+          opacity: 0,
         });
-
       } else {
-
         $tempF.css({
-          'transform': 'translateY(0px)',
-          'opacity': 1
+          transform: 'translateY(0px)',
+          opacity: 1,
         });
         $tempC.css({
-          'transform': 'translateY(15px)',
-          'opacity': 0
+          transform: 'translateY(15px)',
+          opacity: 0,
         });
-
       }
-
     }
   }
 
@@ -130,13 +126,29 @@ import css from '../styles/main.css';
     var condition = weatherInfo.currently.summary;
     var temp = weatherInfo.currently.apparentTemperature;
     var icon = weatherInfo.currently.icon;
-    var dateHMTL = '<span class="date" style="color: #' + format.getFormat().dateColor + '"> ' + format.getDay() + ', ' + now.getDate() + ' ' + format.getMonth() + ' ' + now.getFullYear() + '</span>';
+    var dateHMTL =
+      '<span class="date" style="color: #' +
+      format.getFormat().dateColor +
+      '"> ' +
+      format.getDay() +
+      ', ' +
+      now.getDate() +
+      ' ' +
+      format.getMonth() +
+      ' ' +
+      now.getFullYear() +
+      '</span>';
 
-    $city.html(locationInfo.cityName + ', ' + locationInfo.stateName + ' • ' + dateHMTL);
+    $city.html(
+      locationInfo.cityName + ', ' + locationInfo.stateName + ' • ' + dateHMTL
+    );
     $tempF.html(Math.floor(temp) + '˚F');
     $tempC.html(format.fahrenheitCelsius(temp) + '˚C');
     $greeting.html(format.getFormat().greeting);
-    $desc.html('<canvas id="icon" class="icon" width="64" height="64"></canvas>' + condition);
+    $desc.html(
+      '<canvas id="icon" class="icon" width="64" height="64"></canvas>' +
+        condition
+    );
 
     icons.add('icon', icon);
     icons.play();
@@ -148,11 +160,9 @@ import css from '../styles/main.css';
     bindData();
     bindEvents();
     animate();
-
   }
 
   function error(err) {
     console.log('error', err.message);
   }
-
 })();

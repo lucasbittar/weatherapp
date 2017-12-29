@@ -12,20 +12,21 @@
   // Calls Google Images API and returns random image
   var searchImage = function(query) {
     var deferred = $.Deferred();
-    var customImageVars = '&size=wallpaper';
+    var customImageVars = '&image_type=photo';
     console.log('Fetching image for: ' + query);
 
     function error(err) {
-      console.log('No images');
-      deferred.resolve('no-image.png');
-      // deferred.rejected('Error');
+      // console.log('No images');
+      // deferred.resolve('no-image.png');
+      deferred.rejected('Error');
     }
 
     function imageInfo(data) {
-      var max = data.value.length;
+      console.log('data', data);
+      var max = data.hits.length;
       var random = randomize(max, 0);
 
-      deferred.resolve(data.value[random]);
+      deferred.resolve(data.hits[random]);
     }
 
     function randomize(max, min) {
@@ -34,12 +35,9 @@
 
     $.ajax({
       url:
-        'https://api.cognitive.microsoft.com/bing/v7.0/search?responseFilter=Images&q=' +
+        'https://pixabay.com/api/?key=7541656-f946c6c55f57647be27ec3e5a&q=' +
         query +
         customImageVars,
-      headers: {
-        'Ocp-Apim-Subscription-Key': 'f29b7fb1a829491ab00913b629ce99e0',
-      },
       success: imageInfo,
       error: error,
     });
