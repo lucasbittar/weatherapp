@@ -79,7 +79,7 @@ import css from '../styles/main.css';
 
     $('.weather-bg').css(
       'background',
-      'url(' + imageInfo.webformatURL + ') no-repeat 50% center'
+      'url(' + imageInfo.url + ') no-repeat 50% center'
     );
     $('.weather-bg-animation').css(
       'background',
