@@ -19,7 +19,7 @@
   var searchImage = function(query) {
     var deferred = $.Deferred();
     var customImageVars = {
-      size: 'large',
+      size: 'xxlarge',
     };
 
     console.log('Fetching image for: ' + query);
