@@ -11,7 +11,13 @@ config.output.filename = 'app.js';
 
 config.optimization = {
   minimize: true,
-  minimizer: [new TerserPlugin()],
+  minimizer: [
+    new TerserPlugin({
+      terserOptions: {
+        compress: {},
+      },
+    }),
+  ],
 };
 
 module.exports = config;
