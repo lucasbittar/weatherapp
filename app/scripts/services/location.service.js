@@ -44,12 +44,17 @@
 
     $.when(getLocationCoordinates()).then(success, error);
 
-    function success(coords) {
+    function success({ latitude, longitude }) {
+      /*
+      var longitude = -73.9769727;
+      var latitude = 40.7700084;
+      */
+
       $.ajax({
         url:
           'http://dataservice.accuweather.com/locations/v1/cities/geoposition/search',
         data: {
-          q: `${coords.latitude},${coords.longitude}`,
+          q: `${latitude},${longitude}`,
           apikey: 'uv8yUDGtAMuxYOy7NJbQbIAqqf4FD0cA',
         },
       }).done((res) => {
@@ -57,8 +62,8 @@
           cityName: res.LocalizedName,
           stateName: res.AdministrativeArea.LocalizedName,
           stateAbbreviation: res.AdministrativeArea.ID,
-          latitude: coords.latitude,
-          longitude: coords.longitude,
+          latitude: latitude,
+          longitude: longitude,
         };
 
         deferred.resolve(locationInfo);

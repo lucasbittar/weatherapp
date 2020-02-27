@@ -42,18 +42,7 @@
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
-    googleImages.search('campinas', customImageVars).then(imageInfo);
-
-    /*
-    $.ajax({
-      url:
-        'https://pixabay.com/api/?key=7541656-f946c6c55f57647be27ec3e5a&q=' +
-        query +
-        customImageVars,
-      success: imageInfo,
-      error: error,
-    });
-    */
+    googleImages.search(query, customImageVars).then(imageInfo);
 
     return deferred.promise();
   };
