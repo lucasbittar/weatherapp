@@ -4,10 +4,14 @@
  * Created: 20170131
  */
 
-var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-
+var TerserPlugin = require('terser-webpack-plugin');
 var config = require('./webpack.config');
 
 config.output.filename = 'app.js';
+
+config.optimization = {
+  minimize: true,
+  minimizer: [new TerserPlugin()],
+};
 
 module.exports = config;

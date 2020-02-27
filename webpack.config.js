@@ -4,9 +4,6 @@
  * Created: 20170131
  */
 
-var webpack = require('webpack');
-var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-
 var config = {
   context: __dirname + '/app',
   entry: './scripts/main.js',
