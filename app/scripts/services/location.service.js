@@ -52,7 +52,7 @@
 
       $.ajax({
         url:
-          'http://dataservice.accuweather.com/locations/v1/cities/geoposition/search',
+          'https://dataservice.accuweather.com/locations/v1/cities/geoposition/search',
         data: {
           q: `${latitude},${longitude}`,
           apikey: 'uv8yUDGtAMuxYOy7NJbQbIAqqf4FD0cA',
