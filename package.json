@@ -15,7 +15,7 @@
     "uglify-js-plugin": "0.0.6",
     "url-loader": "^0.5.7",
     "webpack": "^2.2.1",
-    "webpack-dev-server": "^1.16.3"
+    "webpack-dev-server": "^3.1.11"
   },
   "scripts": {
     "start": "webpack-dev-server --progress --colors --content-base public/ --port 8080",
