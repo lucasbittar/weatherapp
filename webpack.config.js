@@ -5,7 +5,7 @@
  */
 
 var webpack = require('webpack');
-var UglifyJsPlugin = require('uglify-js-plugin');
+var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 var config = {
   context: __dirname + '/app',
@@ -13,26 +13,20 @@ var config = {
   devtool: 'source-map',
   output: {
     path: __dirname + '/public',
-    filename: 'app.js'
+    filename: 'app.js',
   },
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: [ 'style-loader', 'css-loader' ]
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.(jpg?g|png|gif|svg)$/i,
-        use: 'url-loader?limit=10000!img-loader?progressive=true'
-      }
-    ]
+        use: 'url-loader?limit=10000!img-loader?progressive=true',
+      },
+    ],
   },
-  plugins: [
-    new UglifyJsPlugin({
-      compress: false,
-      debug: true
-    })
-  ]
-}
+};
 
 module.exports = config;

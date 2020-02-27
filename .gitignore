@@ -4,3 +4,5 @@ bower_components
 npm-debug.log
 *.swp
 *.DS_Store
+.package-lock.json
+.yarn-lock.json

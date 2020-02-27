@@ -4,16 +4,10 @@
  * Created: 20170131
  */
 
-var UglifyJsPlugin = require('uglify-js-plugin');
+var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
-var config = require('./webpack.config'),
-    webpack = require('webpack');
+var config = require('./webpack.config');
 
-config.output.filename = 'app.js',
-config.plugins = [
-    new UglifyJsPlugin({
-       minimize: true
-    })
-  ];
+config.output.filename = 'app.js';
 
 module.exports = config;
