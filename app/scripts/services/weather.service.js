@@ -5,14 +5,12 @@
  */
 
 (function() {
-
   'use strict';
 
   var $ = require('jquery');
 
   // Calls weather API and returns weather data
   var getWeatherInfo = function(lat, lng) {
-
     console.log('Fetching weather info...');
 
     var deferred = $.Deferred();
@@ -23,25 +21,25 @@
     }
 
     function weatherInfo(data) {
-
       deferred.resolve(data);
-
     }
 
     $.ajax({
-	   url: 'https://api.forecast.io/forecast/be45cb50a809642825748280ae0a93aa/' + lat + ',' + lng,
-	   crossDomain: true,
-	   dataType: "jsonp",
-	   success: weatherInfo,
-	   error: error
+      url:
+        'https://api.forecast.io/forecast/be45cb50a809642825748280ae0a93aa/' +
+        lat +
+        ',' +
+        lng,
+      crossDomain: true,
+      dataType: 'jsonp',
+      success: weatherInfo,
+      error: error,
     });
 
     return deferred.promise();
-
-  }
+  };
 
   module.exports = {
-    getInfo: getWeatherInfo
-  }
-
+    getInfo: getWeatherInfo,
+  };
 })();
