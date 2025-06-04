@@ -6,7 +6,6 @@ import formatService from '../services/format.service'; // For date formatting, 
 
 // Import components
 import LoadingIndicator from './LoadingIndicator';
-// import BackgroundImage from './BackgroundImage'; // Deleted, no longer used
 import LocationDisplay from './LocationDisplay';
 import TemperatureDisplay from './TemperatureDisplay';
 import WeatherDescription from './WeatherDescription';
@@ -21,7 +20,6 @@ function App() {
   const [error, setError] = useState(null);
   const [currentUnit, setCurrentUnit] = useState('F');
   const [contentVisible, setContentVisible] = useState(false);
-  const [loaderHidden, setLoaderHidden] = useState(false);
 
   useEffect(() => {
     // setIsLoading(true); // Already true by default
@@ -42,29 +40,14 @@ function App() {
         setImageInfo(imageData);
         setIsLoading(false);
         setContentVisible(true);
-        setLoaderHidden(true);
       })
       .catch(err => {
         console.error("Error fetching data:", err);
         setError(err.message || 'Failed to fetch data');
         setIsLoading(false);
         setContentVisible(true);
-        setLoaderHidden(true);
       });
   }, []); // Empty dependency array to run only on mount
-
-  useEffect(() => {
-    if (loaderHidden) {
-      const staticLoader = document.querySelector('.weather-bg .loader');
-      if (staticLoader) {
-        staticLoader.style.display = 'none';
-      }
-    }
-  }, [loaderHidden]);
-
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
 
   if (error) {
     // Attempt to match original styling for error messages if possible
@@ -78,10 +61,8 @@ function App() {
   // Basic rendering - detailed props will be passed in later steps
   return (
     <div className={`weather-app-react ${contentVisible ? 'content-visible' : 'content-hidden'}`}>
-      {/* BackgroundImage might wrap everything or be a self-contained style element */}
-      {/* For now, BackgroundImage component is not used directly here, styling is applied to weather-bg divs */}
-
-      <div className="weather-border"></div>
+      <LoadingIndicator hidden={!isLoading} />
+      <div className="weather-border" style={{ backgroundColor: isLoading ? 'rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0)' }}></div>
       <div className="weather-bg-animation" style={{ background: imageInfo && imageInfo.url && formatService ? `linear-gradient(344deg, rgba(255,255,255,0), #${formatService.getFormat().backgroundColor})` : '' }}></div>
       <div className="weather-bg" style={{ background: imageInfo && imageInfo.url ? `url(${imageInfo.url}) no-repeat 50% center / cover` : '' }}>
         {formatService && <h1 className="greeting">{formatService.getFormat().greeting}</h1>}
@@ -89,15 +70,10 @@ function App() {
         {weatherInfo && formatService && <TemperatureDisplay weatherData={weatherInfo} unit={currentUnit} formatService={formatService} />}
         {weatherInfo && <WeatherDescription weatherData={weatherInfo} />} {/* Skycons color is handled internally for now */}
         {currentUnit && setCurrentUnit && <UnitConverter currentUnit={currentUnit} setCurrentUnit={setCurrentUnit} />}
-        {/* Uncomment to display raw data for verification if needed */}
-        {/* <pre>Location: {JSON.stringify(locationInfo, null, 2)}</pre> */}
-        {/* <pre>Weather: {JSON.stringify(weatherInfo, null, 2)}</pre> */}
-        {/* <pre>Image: {JSON.stringify(imageInfo, null, 2)}</pre> */}
       </div>
       <div className="credits">
         created by
-        <a href="https://github.com/lucasbittar/" target="_blank">Lucas Bittar</a
-        >.
+        <a href="https://github.com/lucasbittar/" target="_blank" style={{ paddingLeft: '3px' }}>Lucas Bittar</a>.
       </div>
     </div>
   );

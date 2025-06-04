@@ -30,8 +30,12 @@ function WeatherDescription({ weatherData }) {
     skyconsInstance.play();
 
     return () => {
-      skyconsInstance.remove(canvasRef.current);
-      // It's also good practice to call pause if the instance is stored and reused.
+      // Ensure the canvas element and its parent node exist before trying to remove
+      if (canvasRef.current && canvasRef.current.parentNode) {
+        skyconsInstance.remove(canvasRef.current);
+      }
+      // It's also good practice to call pause if the instance is stored and reused,
+      // though in this component's lifecycle, it's destroyed and recreated.
       // skyconsInstance.pause();
     };
   }, [weatherData, iconColor]); // Rerun if weatherData or color changes
