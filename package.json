@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "Simple and basic weather app (still in beta version though).",
   "main": "webpack.config.js",
-  "dependencies": {
-    "google-images": "^2.1.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.27.4",
     "@babel/preset-env": "^7.27.2",
