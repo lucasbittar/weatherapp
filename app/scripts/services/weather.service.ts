@@ -53,7 +53,7 @@ interface OpenMeteoResponse {
 
 // Basic mapping from WMO code to a summary and Skycon-like icon string
 // This is a simplified version. A more robust solution would be more comprehensive.
-function mapWeatherCode(code: number): { summary: string; icon: string } {
+export function mapWeatherCode(code: number): { summary: string; icon: string } {
   // Based on https://open-meteo.com/en/docs WMO Weather interpretation codes
   if (code === 0) return { summary: "Clear sky", icon: "CLEAR_DAY" };
   if (code === 1) return { summary: "Mainly clear", icon: "PARTLY_CLOUDY_DAY" };

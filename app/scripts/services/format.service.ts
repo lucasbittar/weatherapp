@@ -6,16 +6,13 @@
 
 'use strict';
 
-const now = new Date();
-const hours = now.getHours();
-
 // Days Array
 const days: string[] = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 // Months
 const months: string[] = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
 // Interface for the object returned by getFormat
-interface TimeFormatDetails {
+export interface TimeFormatDetails {
   currentTime: string;
   greeting: string;
   backgroundColor: string;
@@ -24,32 +21,36 @@ interface TimeFormatDetails {
 
 // Returns a string with the day of the week
 const getDay = function(day?: number): string {
-  return days[ day !== undefined ? day : now.getDay()];
+  const currentDate = new Date();
+  return days[ day !== undefined ? day : currentDate.getDay()];
 }
 
 // Returns a string with the month
 const getMonth = function(month?: number): string {
-  return months[ month !== undefined ? month : now.getMonth()];
+  const currentDate = new Date();
+  return months[ month !== undefined ? month : currentDate.getMonth()];
 }
 
 // Returns format based on current time
 const getFormat = function(): TimeFormatDetails {
+  const currentDate = new Date();
+  const currentHours = currentDate.getHours();
 
-  if ( hours > 5 && hours < 12) {
+  if ( currentHours > 5 && currentHours < 12) {
     return {
       currentTime: 'morning',
       greeting: 'Good Morning!',
       backgroundColor: 'efdf7e',
       dateColor: '665800'
     };
-  } else if ( hours >= 12 && hours < 17 ) {
+  } else if ( currentHours >= 12 && currentHours < 17 ) {
     return {
       currentTime: 'afternoon',
       greeting: 'Good Afternoon!',
       backgroundColor: 'efdf7e',
       dateColor: '665800'
     };
-  } else if ( hours >= 17 && hours < 19 ) {
+  } else if ( currentHours >= 17 && currentHours < 19 ) {
     return {
       currentTime: 'evening',
       greeting: 'Good Evening!',

@@ -5,8 +5,6 @@
  */
 'use strict';
 
-const ACCUWEATHER_API_KEY: string = 'uv8yUDGtAMuxYOy7NJbQbIAqqf4FD0cA'; // Use a constant for the API key
-
 // Interfaces
 interface Coordinates {
   latitude: number;
@@ -70,8 +68,15 @@ const getLocationInfo = async (): Promise<LocationDetails> => {
     // 1. Get Coordinates
     const { latitude, longitude }: Coordinates = await getLocationCoordinates();
 
+    const accuweatherApiKeyFromEnv = process.env.ACCUWEATHER_API_KEY;
+    if (!accuweatherApiKeyFromEnv) {
+      const errorMessage = 'ACCUWEATHER_API_KEY environment variable is not defined.';
+      console.error(errorMessage);
+      throw new Error(errorMessage);
+    }
+
     // 2. Build AccuWeather API URL
-    const url: string = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${ACCUWEATHER_API_KEY}&q=${latitude},${longitude}&details=true`;
+    const url: string = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuweatherApiKeyFromEnv}&q=${latitude},${longitude}&details=true`;
 
     // 3. Fetch Location Data from AccuWeather
     const response: Response = await fetch(url);
