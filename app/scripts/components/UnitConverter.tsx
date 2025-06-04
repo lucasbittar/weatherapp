@@ -6,12 +6,6 @@ interface UnitConverterProps {
 }
 
 const UnitConverter: FC<UnitConverterProps> = ({ currentUnit, setCurrentUnit }) => {
-  // The check for !setCurrentUnit might be overly defensive if App.tsx always passes it.
-  // TypeScript will ensure it's passed if defined as non-optional in props.
-  // if (!setCurrentUnit) {
-  //   return null;
-  // }
-
   return (
     <div className="units">
       <div

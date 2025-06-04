@@ -5,6 +5,8 @@
  */
 'use strict';
 
+const ACCUWEATHER_API_KEY: string = 'uv8yUDGtAMuxYOy7NJbQbIAqqf4FD0cA'; // Use a constant for the API key
+
 // Interfaces
 interface Coordinates {
   latitude: number;
@@ -15,21 +17,20 @@ interface AccuWeatherGeoPositionResponse {
   LocalizedName: string;
   AdministrativeArea: {
     LocalizedName: string;
-    ID: string; // This is the state/region abbreviation
+    ID: string;
   };
   Country: {
     LocalizedName: string;
     ID: string; // Country code
   };
-  // Add other fields if needed, e.g., Key for location key
 }
 
 interface LocationDetails {
   cityName: string;
-  stateName: string;      // e.g., "California"
-  stateAbbreviation: string; // e.g., "CA"
-  countryName?: string;    // e.g., "United States" (if available)
-  countryCode?: string;    // e.g., "US"
+  stateName: string;
+  stateAbbreviation: string;
+  countryName?: string;
+  countryCode?: string;
   latitude: number;
   longitude: number;
 }
@@ -60,53 +61,64 @@ const getLocationCoordinates = function(): Promise<Coordinates> {
   });
 };
 
-// Fetches user's location and returns city, state and abbreviation based on longitude and latitude
-const getLocationInfo = function(): Promise<LocationDetails> {
-  return new Promise((resolve, reject) => {
-    getLocationCoordinates()
-      .then(({ latitude, longitude }) => {
-        const accuWeatherApiKey = 'uv8yUDGtAMuxYOy7NJbQbIAqqf4FD0cA';
-        const url = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuWeatherApiKey}&q=${latitude},${longitude}&details=true`; // Added details=true for more info
+/**
+ * Fetches location information (city, state, country) based on current coordinates.
+ * @returns {Promise<LocationDetails>} A promise that resolves with structured location details.
+ */
+const getLocationInfo = async (): Promise<LocationDetails> => {
+  try {
+    // 1. Get Coordinates
+    const { latitude, longitude }: Coordinates = await getLocationCoordinates();
 
-        fetch(url)
-          .then(response => {
-            if (!response.ok) {
-              // Try to parse error from AccuWeather if possible
-              return response.json().then(errData => {
-                const message = errData?.Message || `AccuWeather API request failed with status ${response.status}`;
-                throw new Error(message);
-              }).catch(() => {
-                throw new Error(`AccuWeather API request failed with status ${response.status}`);
-              });
-            }
-            return response.json() as Promise<AccuWeatherGeoPositionResponse>;
-          })
-          .then(data => {
-            if (!data || !data.LocalizedName || !data.AdministrativeArea || !data.Country) {
-                console.error('Unexpected response structure from AccuWeather:', data);
-                throw new Error('Invalid location data received from AccuWeather');
-            }
-            const locationInfo: LocationDetails = {
-              cityName: data.LocalizedName,
-              stateName: data.AdministrativeArea.LocalizedName,
-              stateAbbreviation: data.AdministrativeArea.ID,
-              countryName: data.Country.LocalizedName,
-              countryCode: data.Country.ID,
-              latitude: latitude,
-              longitude: longitude,
-            };
-            resolve(locationInfo);
-          })
-          .catch((err: Error) => {
-            console.error('Error fetching location details:', err.message);
-            reject(new Error(err.message || 'Failed to fetch location details'));
-          });
-      })
-      .catch((err: Error) => {
-        console.error('Error getting coordinates for location info:', err.message);
-        reject(new Error(err.message || 'Failed to get coordinates'));
-      });
-  });
+    // 2. Build AccuWeather API URL
+    const url: string = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${ACCUWEATHER_API_KEY}&q=${latitude},${longitude}&details=true`;
+
+    // 3. Fetch Location Data from AccuWeather
+    const response: Response = await fetch(url);
+
+    // 4. Handle HTTP Errors
+    if (!response.ok) {
+      let errorMessage: string = `AccuWeather API request failed with status ${response.status}`;
+      try {
+        const errorData: { Message?: string } = await response.json();
+        if (errorData?.Message) { // Optional chaining for 'Message'
+          errorMessage = errorData.Message;
+        }
+      } catch (jsonError) {
+        console.warn('Could not parse AccuWeather error response JSON:', jsonError);
+      }
+      throw new Error(errorMessage);
+    }
+
+    // 5. Parse JSON Response
+    const data: AccuWeatherGeoPositionResponse = await response.json();
+
+    // 6. Validate Response Data Structure
+    // Ensure the data conforms to the expected structure
+    if (!data || !data.LocalizedName || !data.AdministrativeArea || !data.Country) {
+      console.error('Unexpected response structure from AccuWeather:', data);
+      throw new Error('Invalid location data received from AccuWeather. Missing expected fields.');
+    }
+
+    // 7. Structure and Return Location Information
+    const locationInfo: LocationDetails = {
+      cityName: data.LocalizedName,
+      stateName: data.AdministrativeArea.LocalizedName,
+      stateAbbreviation: data.AdministrativeArea.ID,
+      countryName: data.Country.LocalizedName,
+      countryCode: data.Country.ID,
+      latitude: latitude,
+      longitude: longitude,
+    };
+
+    return locationInfo;
+
+  } catch (err: any) { // Type 'any' for err in catch is a common pattern for now in TS < 4.4
+    // Centralized Error Handling
+    console.error('An error occurred during location info retrieval:', err.message);
+    // Re-throw a standardized error message to the caller
+    throw new Error(err.message || 'Failed to retrieve location information.');
+  }
 };
 
 interface LocationService {

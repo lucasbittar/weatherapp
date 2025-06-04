@@ -8,7 +8,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 var config = {
   context: __dirname + '/app',
-  entry: './scripts/index.js',
+  entry: './scripts/index.tsx',
   devtool: 'source-map',
   output: {
     path: __dirname + '/public',

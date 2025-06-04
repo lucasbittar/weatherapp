@@ -26,9 +26,6 @@ interface TemperatureDisplayProps {
 }
 
 const TemperatureDisplay: FC<TemperatureDisplayProps> = ({ weatherData, unit, formatService }) => {
-  // weatherData itself or weatherData.currently can be null if API call failed or is pending
-  // App.tsx already checks for weatherInfo before rendering this component,
-  // but defensive check here is good practice.
   if (!weatherData || !weatherData.currently || !formatService) {
     return null;
   }
