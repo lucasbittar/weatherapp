@@ -3,82 +3,82 @@
  * Author: Lucas Bittar Magnani
  * Created: 20170131
  */
+'use strict';
 
-(function() {
-  'use strict';
+// Fetches user's location and returns longitude and latitude
+const getLocationCoordinates = function() {
+  console.log('Fetching location...');
 
-  var $ = require('jquery');
-  var _ = require('lodash');
-
-  // Fetches user's location and returns longitude and latitude
-  var getLocationCoordinates = function() {
-    console.log('Fetching location...');
-
-    var deferred = $.Deferred();
-    var longitude;
-    var latitude;
-
-    function error(err) {
-      alert(err.message);
-      deferred.rejected('Error');
-    }
-
-    function showPosition(position) {
-      var location = {
+  return new Promise((resolve, reject) => {
+    function success(position) {
+      const location = {
         longitude: position.coords.longitude,
         latitude: position.coords.latitude,
       };
-
-      deferred.resolve(location);
-    }
-
-    // Native browser geolocation
-    navigator.geolocation.getCurrentPosition(showPosition, error);
-
-    return deferred.promise();
-  };
-
-  // Fetches user's location and returns city, state and abbreviation based on longitude and latitude
-  var getLocationInfo = function() {
-    var deferred = $.Deferred();
-
-    $.when(getLocationCoordinates()).then(success, error);
-
-    function success({ latitude, longitude }) {
-      /*
-      var longitude = -73.9769727;
-      var latitude = 40.7700084;
-      */
-
-      $.ajax({
-        url:
-          'https://dataservice.accuweather.com/locations/v1/cities/geoposition/search',
-        data: {
-          q: `${latitude},${longitude}`,
-          apikey: 'uv8yUDGtAMuxYOy7NJbQbIAqqf4FD0cA',
-        },
-      }).done((res) => {
-        var locationInfo = {
-          cityName: res.LocalizedName,
-          stateName: res.AdministrativeArea.LocalizedName,
-          stateAbbreviation: res.AdministrativeArea.ID,
-          latitude: latitude,
-          longitude: longitude,
-        };
-
-        deferred.resolve(locationInfo);
-      });
+      resolve(location);
     }
 
     function error(err) {
-      console.log('error', err);
+      // alert(err.message); // Avoid using alert for better error handling in React
+      console.error('Geolocation error:', err.message);
+      reject(new Error(err.message || 'Error getting location coordinates'));
     }
 
-    return deferred.promise();
-  };
+    // Native browser geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(success, error);
+    } else {
+      reject(new Error('Geolocation is not supported by this browser.'));
+    }
+  });
+};
 
-  module.exports = {
-    getCoordinates: getLocationCoordinates,
-    getInfo: getLocationInfo,
-  };
-})();
+// Fetches user's location and returns city, state and abbreviation based on longitude and latitude
+const getLocationInfo = function() {
+  return new Promise((resolve, reject) => {
+    getLocationCoordinates()
+      .then(({ latitude, longitude }) => {
+        // Construct the URL for AccuWeather API
+        const accuWeatherApiKey = 'uv8yUDGtAMuxYOy7NJbQbIAqqf4FD0cA'; // Consider moving to a config file
+        const url = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuWeatherApiKey}&q=${latitude},${longitude}`;
+
+        fetch(url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`AccuWeather API request failed with status ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(res => {
+            if (!res || !res.LocalizedName || !res.AdministrativeArea) {
+                console.error('Unexpected response structure from AccuWeather:', res);
+                throw new Error('Invalid location data received from AccuWeather');
+            }
+            const locationInfo = {
+              cityName: res.LocalizedName,
+              stateName: res.AdministrativeArea.LocalizedName,
+              stateAbbreviation: res.AdministrativeArea.ID,
+              latitude: latitude,
+              longitude: longitude,
+            };
+            resolve(locationInfo);
+          })
+          .catch(err => {
+            console.error('Error fetching location details:', err);
+            reject(err); // Forward the error from fetch or custom error
+          });
+      })
+      .catch(err => {
+        // This catches errors from getLocationCoordinates
+        console.error('Error getting coordinates for location info:', err);
+        reject(err);
+      });
+  });
+};
+
+const locationService = {
+  getCoordinates: getLocationCoordinates,
+  getInfo: getLocationInfo,
+};
+
+export default locationService;

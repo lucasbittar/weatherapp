@@ -3,51 +3,48 @@
  * Author: Lucas Bittar Magnani
  * Created: 20170201
  */
+'use strict';
 
-(function() {
-  'use strict';
+import GoogleImages from 'google-images';
+// const GoogleImages = require('google-images'); // If 'google-images' doesn't support ES6 import
 
-  var $ = require('jquery');
-  var GoogleImages = require('google-images');
+const CSEID = '015322544866411100232:80q4o4-wffo';
+const APIKEY = 'AIzaSyBze8GRhDx5kp-zA9kM9PH3IzzSK8JG6cg';
 
-  var CSEID = '015322544866411100232:80q4o4-wffo';
-  var APIKEY = 'AIzaSyBze8GRhDx5kp-zA9kM9PH3IzzSK8JG6cg';
+const googleImages = new GoogleImages(CSEID, APIKEY);
 
-  var googleImages = new GoogleImages(CSEID, APIKEY);
-
-  // Calls Google Images API and returns random image
-  var searchImage = function(query) {
-    var deferred = $.Deferred();
-    var customImageVars = {
+// Calls Google Images API and returns random image
+const searchImage = function(query) {
+  return new Promise((resolve, reject) => {
+    const customImageVars = {
       size: 'xxlarge',
     };
 
     console.log('Fetching image for: ' + query);
 
-    function error(err) {
-      // console.log('No images');
-      // deferred.resolve('no-image.png');
-      deferred.rejected('Error');
-    }
+    googleImages.search(query, customImageVars)
+      .then(images => {
+        if (images && images.length > 0) {
+          const max = images.length;
+          const random = Math.floor(Math.random() * max); // Simplified randomize
+          resolve(images[random]);
+        } else {
+          console.log('No images found for: ' + query);
+          // Resolve with a placeholder or specific structure if needed, or reject
+          // For now, let's resolve with null or an empty object to avoid breaking App.js logic
+          resolve(null);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching image:', err);
+        // Reject with a meaningful error, perhaps the error object itself or a message
+        reject(new Error('Failed to fetch image'));
+      });
+  });
+};
 
-    function imageInfo(images) {
-      // console.log('Images', images);
-      var max = images.length;
-      var random = randomize(max, 0);
+const imageService = {
+  search: searchImage,
+};
 
-      deferred.resolve(images[random]);
-    }
-
-    function randomize(max, min) {
-      return Math.floor(Math.random() * (max - min + 1) + min);
-    }
-
-    googleImages.search(query, customImageVars).then(imageInfo);
-
-    return deferred.promise();
-  };
-
-  module.exports = {
-    search: searchImage,
-  };
-})();
+export default imageService;
