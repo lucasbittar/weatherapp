@@ -1,0 +1,123 @@
+/**
+ * Project Name: Weather App | Weather Service
+ * Author: Lucas Bittar Magnani
+ * Created: 20170201
+ */
+'use strict';
+
+// Interfaces for Open-Meteo response and the structure App.tsx expects
+
+// This is what App.tsx's WeatherInfo.currently expects
+interface WeatherCurrentlyApp {
+  apparentTemperature: number;
+  summary: string; // e.g., "Cloudy", "Sunny"
+  icon: string;    // Skycon compatible icon string e.g., "CLOUDY"
+  humidity?: number;
+  windSpeed?: number;
+  temperature?: number; // Actual temperature, if different from apparent
+}
+
+// This is the structure for the service's output, matching App.tsx's WeatherInfo
+interface WeatherInfoServiceOutput {
+  currently: WeatherCurrentlyApp;
+  // Potentially other top-level keys like 'daily', 'hourly'
+}
+
+// Interface for the actual 'current' object from Open-Meteo
+interface OpenMeteoCurrentData {
+  time: string;
+  interval: number;
+  temperature_2m: number; // What was originally fetched
+  apparent_temperature: number;
+  weather_code: number; // WMO Weather interpretation codes (ww)
+  relative_humidity_2m: number;
+  wind_speed_10m: number;
+}
+
+interface OpenMeteoResponse {
+  latitude: number;
+  longitude: number;
+  generationtime_ms: number;
+  utc_offset_seconds: number;
+  timezone: string;
+  timezone_abbreviation: string;
+  elevation: number;
+  current_units: Record<string, string>;
+  current: OpenMeteoCurrentData;
+}
+
+// Basic mapping from WMO code to a summary and Skycon-like icon string
+// This is a simplified version. A more robust solution would be more comprehensive.
+function mapWeatherCode(code: number): { summary: string; icon: string } {
+  // Based on https://open-meteo.com/en/docs WMO Weather interpretation codes
+  if (code === 0) return { summary: 'Clear sky', icon: 'CLEAR_DAY' };
+  if (code === 1) return { summary: 'Mainly clear', icon: 'PARTLY_CLOUDY_DAY' };
+  if (code === 2) return { summary: 'Partly cloudy', icon: 'PARTLY_CLOUDY_DAY' };
+  if (code === 3) return { summary: 'Overcast', icon: 'CLOUDY' };
+  if (code >= 45 && code <= 48) return { summary: 'Fog', icon: 'FOG' };
+  if (code >= 51 && code <= 55) return { summary: 'Drizzle', icon: 'RAIN' }; // RAIN can represent drizzle
+  if (code >= 56 && code <= 57) return { summary: 'Freezing Drizzle', icon: 'SLEET' };
+  if (code >= 61 && code <= 65) return { summary: 'Rain', icon: 'RAIN' };
+  if (code >= 66 && code <= 67) return { summary: 'Freezing Rain', icon: 'SLEET' };
+  if (code >= 71 && code <= 75) return { summary: 'Snow fall', icon: 'SNOW' };
+  if (code === 77) return { summary: 'Snow grains', icon: 'SNOW' };
+  if (code >= 80 && code <= 82) return { summary: 'Rain showers', icon: 'RAIN' };
+  if (code >= 85 && code <= 86) return { summary: 'Snow showers', icon: 'SNOW' };
+  if (code >= 95 && code <= 99) return { summary: 'Thunderstorm', icon: 'THUNDERSTORM_SHOWERS_DAY' }; // Assuming day, needs time context
+  return { summary: 'Unknown', icon: 'CLOUDY' }; // Default fallback
+}
+
+
+// Calls weather API and returns weather data structured for the app
+const getWeatherInfo = function(lat: number, lng: number): Promise<WeatherInfoServiceOutput> {
+  console.log('Fetching weather info for:', lat, lng);
+
+  // Requesting more fields from Open-Meteo
+  const currentFields = "temperature_2m,apparent_temperature,weather_code,relative_humidity_2m,wind_speed_10m";
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=${currentFields}`;
+
+  return new Promise((resolve, reject) => {
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(text => { // Changed from response.json() for non-OK to get text
+            throw new Error(`Weather API request failed with status ${response.status}: ${text || 'No error message body'}`);
+          });
+        }
+        return response.json() as Promise<OpenMeteoResponse>;
+      })
+      .then(data => {
+        if (!data || !data.current) {
+          throw new Error('Invalid weather data received from API');
+        }
+        const current = data.current;
+        const { summary, icon } = mapWeatherCode(current.weather_code);
+
+        const appWeatherData: WeatherInfoServiceOutput = {
+          currently: {
+            temperature: current.temperature_2m, // Actual temperature
+            apparentTemperature: current.apparent_temperature,
+            summary: summary,
+            icon: icon, // This should be a Skycon compatible string
+            humidity: current.relative_humidity_2m,
+            windSpeed: current.wind_speed_10m,
+          },
+        };
+        resolve(appWeatherData);
+      })
+      .catch((err: Error) => {
+        console.error('Weather API error:', err.message);
+        reject(new Error(err.message || 'Failed to fetch weather data'));
+      });
+  });
+};
+
+interface WeatherService {
+  getInfo: (lat: number, lng: number) => Promise<WeatherInfoServiceOutput>;
+}
+
+const weatherService: WeatherService = {
+  getInfo: getWeatherInfo,
+};
+
+export default weatherService;

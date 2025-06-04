@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { FC } from 'react';
 
-function LoadingIndicator({ hidden }) {
+interface LoadingIndicatorProps {
+  hidden: boolean;
+}
+
+const LoadingIndicator: FC<LoadingIndicatorProps> = ({ hidden }) => {
   const visibilityClass = hidden ? 'elements-hidden' : 'elements-show';
 
   return (
@@ -8,6 +12,6 @@ function LoadingIndicator({ hidden }) {
       <span className="loader">fetching your location...</span>
     </div>
   );
-}
+};
 
 export default LoadingIndicator;

@@ -34,10 +34,15 @@ var config = {
           },
         },
       },
+      {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: 'ts-loader',
+      },
     ],
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
     fallback: {
       "stream": require.resolve("stream-browserify"),
       "querystring": require.resolve("querystring-es3"),
