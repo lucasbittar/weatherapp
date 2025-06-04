@@ -10,21 +10,10 @@ const getWeatherInfo = function(lat, lng) {
   console.log('Fetching weather info for:', lat, lng);
 
   return new Promise((resolve, reject) => {
-    // The forecast.io API (Dark Sky) was acquired by Apple and is being phased out.
-    // This API key and endpoint may no longer work or may require a CORS proxy if it only supports JSONP.
-    // For this refactor, we assume it might work with a direct fetch call (CORS enabled).
-    // If it's strictly JSONP, this will fail.
-    const apiKey = 'be45cb50a809642825748280ae0a93aa'; // Consider moving to a config
-    const url = `https://api.forecast.io/forecast/${apiKey}/${lat},${lng}`;
-
-    // NOTE: The original code used dataType: 'jsonp'.
-    // The fetch API does not support JSONP directly.
-    // If the server supports CORS, a regular fetch will work.
-    // If not, an alternative API or a JSONP helper would be needed.
-    // Or, a server-side proxy that adds CORS headers.
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m`;
 
     fetch(url)
-      .then(response => {
+      .then(async response => {
         if (!response.ok) {
           // Attempt to get more info from response if possible
           return response.text().then(text => {

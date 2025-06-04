@@ -18,7 +18,7 @@ const searchImage = function(query) {
     console.log('Fetching image for: ' + query + ' via Google CSE API');
 
     fetch(url)
-      .then(response => {
+      .then(async response => {
         if (!response.ok) {
           // Try to get more error info from response body if possible
           return response.json().then(errData => {

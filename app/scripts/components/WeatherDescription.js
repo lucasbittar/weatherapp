@@ -10,7 +10,7 @@ function WeatherDescription({ weatherData }) {
   const iconColor = '#fff';
 
   useEffect(() => {
-    if (!weatherData || !weatherData.currently || !weatherData.currently.icon || !canvasRef.current) {
+    if (!weatherData || !weatherData.current || !weatherData.current.icon || !canvasRef.current) {
       return;
     }
 
@@ -24,7 +24,7 @@ function WeatherDescription({ weatherData }) {
     }
 
     const skyconsInstance = new EffectiveSkycons({ color: iconColor });
-    const iconName = weatherData.currently.icon.toUpperCase().replace(/-/g, "_");
+    const iconName = weatherData.current.icon.toUpperCase().replace(/-/g, "_");
 
     skyconsInstance.add(canvasRef.current, EffectiveSkycons[iconName] || EffectiveSkycons.CLOUDY); // Fallback to CLOUDY
     skyconsInstance.play();
@@ -36,14 +36,14 @@ function WeatherDescription({ weatherData }) {
     };
   }, [weatherData, iconColor]); // Rerun if weatherData or color changes
 
-  if (!weatherData || !weatherData.currently) {
+  if (!weatherData || !weatherData.current) {
     return null;
   }
 
   // Mimic original structure: <h4 class="desc elements-hidden">Cloudy <canvas width="45" height="45"></canvas></h4>
   return (
     <h4 className="desc">
-      {weatherData.currently.summary}
+      {Math.floor(weatherData.current.temperature_2m)}
       <canvas ref={canvasRef} width="45" height="45" style={{ marginLeft: '10px', verticalAlign: 'middle' }}></canvas>
     </h4>
   );

@@ -94,6 +94,11 @@ function App() {
         {/* <pre>Weather: {JSON.stringify(weatherInfo, null, 2)}</pre> */}
         {/* <pre>Image: {JSON.stringify(imageInfo, null, 2)}</pre> */}
       </div>
+      <div className="credits">
+        created by
+        <a href="https://github.com/lucasbittar/" target="_blank">Lucas Bittar</a
+        >.
+      </div>
     </div>
   );
 }
