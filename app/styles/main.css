@@ -235,6 +235,14 @@ body {
   }
 }
 
+.content-hidden {
+  display: none;
+}
+
+.content-visible {
+  display: block;
+}
+
 @-moz-keyframes animate-bg {
   0% {
     background-position: 86% 0%

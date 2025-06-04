@@ -4,6 +4,8 @@
  * Created: 20170131
  */
 
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 var config = {
   context: __dirname + '/app',
   entry: './scripts/index.js',
@@ -46,6 +48,13 @@ var config = {
       "./package": false // Attempt to stub out problematic internal import in 'got'
     }
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: __dirname + '/public/index.html', // Use existing public/index.html as template
+      filename: 'index.html', // Output file name
+      inject: 'body' // Inject script tags at the end of the body
+    })
+  ]
 };
 
 module.exports = config;

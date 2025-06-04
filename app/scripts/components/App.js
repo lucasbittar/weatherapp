@@ -41,13 +41,26 @@ function App() {
         setWeatherInfo(weatherData);
         setImageInfo(imageData);
         setIsLoading(false);
+        setContentVisible(true);
+        setLoaderHidden(true);
       })
       .catch(err => {
         console.error("Error fetching data:", err);
         setError(err.message || 'Failed to fetch data');
         setIsLoading(false);
+        setContentVisible(true);
+        setLoaderHidden(true);
       });
   }, []); // Empty dependency array to run only on mount
+
+  useEffect(() => {
+    if (loaderHidden) {
+      const staticLoader = document.querySelector('.weather-bg .loader');
+      if (staticLoader) {
+        staticLoader.style.display = 'none';
+      }
+    }
+  }, [loaderHidden]);
 
   if (isLoading) {
     return <LoadingIndicator />;
@@ -64,7 +77,7 @@ function App() {
 
   // Basic rendering - detailed props will be passed in later steps
   return (
-    <div className="weather-app-react">
+    <div className={`weather-app-react ${contentVisible ? 'content-visible' : 'content-hidden'}`}>
       {/* BackgroundImage might wrap everything or be a self-contained style element */}
       {/* For now, BackgroundImage component is not used directly here, styling is applied to weather-bg divs */}
 
