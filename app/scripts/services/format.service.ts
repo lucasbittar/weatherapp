@@ -68,23 +68,23 @@ const getFormat = function(): TimeFormatDetails {
 }
 
 // Converts Fahrenheit to Celsius
-const fahrenheitCelsius = function(tempF: number): number {
-  const tempC = Math.floor((tempF - 32) * 5/9);
-  return tempC;
+const celsiusFahrenheit = function(tempC: number): number {
+  const tempF = Math.floor(tempC * 1.8 + 32);
+  return tempF;
 }
 
 interface FormatService {
   getDay: (day?: number) => string;
   getMonth: (month?: number) => string;
   getFormat: () => TimeFormatDetails;
-  fahrenheitCelsius: (tempF: number) => number;
+  celsiusFahrenheit: (tempF: number) => number;
 }
 
 const formatService: FormatService = {
   getDay: getDay,
   getMonth: getMonth,
   getFormat: getFormat,
-  fahrenheitCelsius: fahrenheitCelsius
+  celsiusFahrenheit: celsiusFahrenheit
 };
 
 export default formatService;

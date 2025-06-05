@@ -105,21 +105,9 @@ describe('FormatService', () => {
     });
   });
 
-  describe('fahrenheitCelsius', () => {
-    it('should convert 32°F to 0°C', () => {
-      expect(formatService.fahrenheitCelsius(32)).toBe(0);
-    });
-
-    it('should convert 212°F to 100°C', () => {
-      expect(formatService.fahrenheitCelsius(212)).toBe(100);
-    });
-
-    it('should convert -4°F to -20°C', () => {
-      expect(formatService.fahrenheitCelsius(-4)).toBe(-20);
-    });
-
-    it('should convert 0°F to -18°C (approximately)', () => {
-      expect(formatService.fahrenheitCelsius(0)).toBe(-18); // Actually -17.77... but floors to -18
+  describe('celsiusFahrenheit', () => {
+    it('should convert 25°C to 77°F', () => {
+      expect(formatService.celsiusFahrenheit(25)).toBe(77);
     });
   });
 });

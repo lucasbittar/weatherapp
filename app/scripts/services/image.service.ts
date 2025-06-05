@@ -35,19 +35,12 @@ interface ImageDetails {
 
 // Calls Google Custom Search Engine API and returns random image details
 const searchImage = function(query: string): Promise<ImageDetails | null> {
-  const apiKeyFromEnv = process.env.API_KEY;
-  const cxFromEnv = process.env.CX;
-
-  // Check if apiKeyFromEnv and cxFromEnv are defined
-  if (!apiKeyFromEnv || !cxFromEnv) {
-    const errorMessage = 'API_KEY or CX environment variable is not defined.';
-    console.error(errorMessage);
-    return Promise.reject(new Error(errorMessage));
-  }
+  const GOOGLE_IMAGES_API_KEY = 'AIzaSyBze8GRhDx5kp-zA9kM9PH3IzzSK8JG6cg';
+  const GOOGLE_IMAGES_CSE_ID = '015322544866411100232:80q4o4-wffo';
 
   return new Promise((resolve, reject) => {
     const customImageSize = 'xxlarge';
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKeyFromEnv}&cx=${cxFromEnv}&q=${encodeURIComponent(query)}&searchType=image&imgSize=${customImageSize}`;
+    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_IMAGES_API_KEY}&cx=${GOOGLE_IMAGES_CSE_ID}&q=${encodeURIComponent(query)}&searchType=image&imgSize=${customImageSize}`;
 
     console.log('Fetching image for: ' + query + ' via Google CSE API');
 
@@ -113,11 +106,10 @@ interface ImageService {
   search: (query: string) => Promise<ImageDetails | null>;
 }
 
-// Ensure the exported service uses the updated searchImage function
 const imageServiceInstance: ImageService = {
   search: searchImage,
 };
 
 export default imageServiceInstance;
-// Make sure to export GoogleSearchResponse for test modification if needed
+
 export type { GoogleSearchResponse, GoogleSearchImageItem, ImageDetails };

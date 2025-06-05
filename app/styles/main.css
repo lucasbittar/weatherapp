@@ -98,16 +98,22 @@ body {
 
 .loader-container {
   position: absolute;
+  transition: all 500ms ease-in-out;
 }
 
 .elements-hidden {
   opacity: 0;
   transform: translateY(25px);
+  transition: all 500ms ease-in-out;
 }
 
 .elements-show {
+  background: #000;
+  height: 100%;
   opacity: 1;
   transform: translateY(0px);
+  width: 100%;
+  z-index: 999999;
   transition: all 500ms ease-in-out;
 }
 
@@ -156,24 +162,26 @@ body {
   font-weight: 400;
 }
 
-.temp-c {
-  opacity: 0;
-  transform: translateY(15px);
-}
-
 .temp-f,
 .temp-c {
-  position: absolute;
   font-size: 15em;
   font-weight: 400;
+  left: 50%;
   letter-spacing: -.025em;
   line-height: 1em;
-  left: 50%;
   margin-left: -240px;
-  text-align: center;
-  width: 100%;
   max-width: 480px;
+  opacity: 0;
+  position: absolute;
+  text-align: center;
+  transform: translateY(15px);
   transition: all 300ms ease-in-out;
+  width: 100%;
+}
+
+.active {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .desc {
