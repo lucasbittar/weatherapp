@@ -37,4 +37,4 @@ I've written it in vanilla JS (spaghetti code) with Bower and Grunt as build too
 
 Still a lot to come hopefully
 
-[Launch Project]: https://lucasbittar.github.io/weatherapp/ "WeatherApp"
+[Launch Project]: https://weatherapp-lucas-bittar-magnanis-projects.vercel.app/ "WeatherApp"
