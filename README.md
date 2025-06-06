@@ -24,6 +24,7 @@ I've written it in vanilla JS (spaghetti code) with Bower and Grunt as build too
 * Introducing tools like TanStack Query for fetching data from the server
 * Implementing recently learned code best practices at Frontend Masters workshop by the amazing David K.
 * Add unit tests to services logic
+* Update GeoLocation API provider from AccuWeather to OpenCage
 
 ### TO-DO
 * ~~Find a good way to deal with env files in GH-pages~~
