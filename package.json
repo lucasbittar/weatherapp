@@ -40,7 +40,8 @@
   },
   "scripts": {
     "dev": "webpack serve --mode development --port 8080 --static public/",
-    "build": "webpack --mode production --config webpack.production.config.js",
+    "build": "webpack --mode production",
+    "build:old": "webpack --mode production --config webpack.production.config.js",
     "test": "jest"
   },
   "repository": {
