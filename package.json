@@ -52,5 +52,8 @@
   "bugs": {
     "url": "https://github.com/lucasbittar/weatherapp/issues"
   },
-  "homepage": "https://github.com/lucasbittar/weatherapp#readme"
+  "homepage": "https://github.com/lucasbittar/weatherapp#readme",
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  }
 }

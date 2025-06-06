@@ -25,7 +25,12 @@ I've written it in vanilla JS (spaghetti code) with Bower and Grunt as build too
 * Implementing recently learned code best practices at Frontend Masters workshop by the amazing David K.
 
 ### TO-DO
-* Find a good way to deal with env files in GH-pages
+* ~~Find a good way to deal with env files in GH-pages~~
+* No such thing as a "good way to deal with env files in GH pages" unfortunately
+* Setup project to be deployed by Vercel (for now)
+
+### Wishlist
+* Setup project to be deployed by my own server
 
 Still a lot to come hopefully
 
