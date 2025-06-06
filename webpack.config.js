@@ -5,6 +5,8 @@
  */
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
+const dotenv = require('dotenv');
 
 var config = {
   context: __dirname + '/app',
@@ -58,6 +60,9 @@ var config = {
       template: __dirname + '/public/index.html', // Use existing public/index.html as template
       filename: 'index.html', // Output file name
       inject: 'body' // Inject script tags at the end of the body
+    }),
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify(dotenv.config().parsed)
     })
   ]
 };

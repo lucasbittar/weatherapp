@@ -68,7 +68,7 @@ const getLocationInfo = async (): Promise<LocationDetails> => {
     // 1. Get Coordinates
     const { latitude, longitude }: Coordinates = await getLocationCoordinates();
 
-    const ACCUWEATHER_API_KEY = 'uv8yUDGtAMuxYOy7NJbQbIAqqf4FD0cA';
+    const ACCUWEATHER_API_KEY = process.env.ACCUWEATHER_API_KEY;
 
     // 2. Build AccuWeather API URL
     const url: string = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${ACCUWEATHER_API_KEY}&q=${latitude},${longitude}&details=true`;

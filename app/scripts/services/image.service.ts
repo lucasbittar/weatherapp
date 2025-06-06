@@ -35,8 +35,8 @@ interface ImageDetails {
 
 // Calls Google Custom Search Engine API and returns random image details
 const searchImage = function(query: string): Promise<ImageDetails | null> {
-  const GOOGLE_IMAGES_API_KEY = 'AIzaSyBze8GRhDx5kp-zA9kM9PH3IzzSK8JG6cg';
-  const GOOGLE_IMAGES_CSE_ID = '015322544866411100232:80q4o4-wffo';
+  const GOOGLE_IMAGES_API_KEY = process.env.GOOGLE_IMAGES_API_KEY;
+  const GOOGLE_IMAGES_CSE_ID = process.env.GOOGLE_IMAGES_CSE_ID;
 
   return new Promise((resolve, reject) => {
     const customImageSize = 'xxlarge';
