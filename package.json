@@ -1,6 +1,6 @@
 {
   "name": "weatherapp",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Simple and basic weather app (still in beta version though).",
   "main": "webpack.config.js",
   "devDependencies": {
