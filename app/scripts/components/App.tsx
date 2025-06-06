@@ -67,7 +67,7 @@ const App: FC = () => {
     isError: isLocationError,
     error: locationError,
   } = useQuery<LocationInfo, Error>({
-    // Explicitly type data and error
+    retry: false,
     queryKey: ["location"],
     queryFn: locationService.getInfo,
     staleTime: Infinity, // Location data is unlikely to change during session
@@ -119,6 +119,7 @@ const App: FC = () => {
     !!locationData && !!weatherData && imageData !== undefined; // imageData can be null
 
   // Error handling: display first error encountered
+  /*
   if (isLocationError) {
     return (
       <div className="weather-bg">
@@ -128,23 +129,28 @@ const App: FC = () => {
       </div>
     );
   }
+  */
+
   // Show specific errors for dependent queries if location succeeded
-  const any_dependent_error =
-    !!locationData && (isWeatherError || isImageError);
-  if (any_dependent_error) {
-    // You could display a more nuanced error message here,
-    // indicating which part failed, or a general one.
-    // For simplicity, showing the first error.
-    let errorMsg = "Error fetching data.";
-    if (isWeatherError)
-      errorMsg = `Error fetching weather: ${weatherError?.message}`;
-    else if (isImageError)
-      errorMsg = `Error fetching image: ${imageError?.message}`;
-    return (
-      <div className="weather-bg">
-        <span className="loader elements-show">{errorMsg}</span>
-      </div>
-    );
+  const any_dependent_error = !!locationData && (isWeatherError || isImageError);
+
+  const errorMessage = () => {
+
+    let errorMsg = '';
+
+    if (isLocationError) {
+      errorMsg = `Location: ${locationError?.message}.\nTry again later.`;
+    } else {
+      if (any_dependent_error) {
+        if (isWeatherError)
+          errorMsg = `Weather: ${weatherError?.message}`;
+        else if (isImageError)
+          errorMsg = `Image: ${imageError?.message}`;
+
+        return errorMsg
+      }
+    }
+    return errorMsg
   }
 
   const formatDetails: FormatDetails | null = formatService
@@ -153,7 +159,7 @@ const App: FC = () => {
 
   return (
     <>
-      <LoadingIndicator hidden={!isLoading && allDataLoaded} />
+      <LoadingIndicator hidden={!isLoading && allDataLoaded} error={errorMessage()} />
       <div
         className={`weather-app-react ${allDataLoaded ? "content-visible" : "content-hidden"}`}
       >
