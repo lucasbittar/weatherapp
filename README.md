@@ -23,11 +23,13 @@ I've written it in vanilla JS (spaghetti code) with Bower and Grunt as build too
 * Complete rewrite in React and TypeScript
 * Introducing tools like TanStack Query for fetching data from the server
 * Implementing recently learned code best practices at Frontend Masters workshop by the amazing David K.
+* Add unit tests to services logic
 
 ### TO-DO
 * ~~Find a good way to deal with env files in GH-pages~~
 * No such thing as a "good way to deal with env files in GH pages" unfortunately
 * Setup project to be deployed by Vercel (for now)
+* Increase test coverage
 
 ### Wishlist
 * Setup project to be deployed by my own server
