@@ -105,7 +105,7 @@ const App: FC = () => {
     queryFn: () => {
       if (!locationData?.cityName)
         throw new Error("City name not available for image query");
-      return imageService.search(locationData.cityName);
+      return imageService.search(`${locationData.cityName} ${locationData.stateName}`);
     },
     enabled: !!locationData?.cityName, // Only run if cityName is available
     staleTime: Infinity, // Image data for a city is unlikely to change frequently
