@@ -71,7 +71,7 @@ const getLocationInfo = async (): Promise<LocationDetails> => {
     // 1. Get Coordinates
     const { latitude, longitude }: Coordinates = await getLocationCoordinates();
 
-    const OPEN_CAGE_API_KEY = process.env.OPEN_CAGE_API_KEY;
+    const OPEN_CAGE_API_KEY = import.meta.env.VITE_OPEN_CAGE_API_KEY;
 
     // 2. Build GeoLocation API URL
     const url: string = `https://api.opencagedata.com/geocode/v1/json?key=${OPEN_CAGE_API_KEY}&q=${latitude},${longitude}&pretty=1&no_annotations=1`;

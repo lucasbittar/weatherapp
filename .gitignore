@@ -7,3 +7,5 @@ npm-debug.log
 .package-lock.json
 .yarn-lock.json
 .env
+.vercel
+.env*.local
