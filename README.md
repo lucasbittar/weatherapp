@@ -14,6 +14,14 @@ I've written it in vanilla JS (spaghetti code) with Bower and Grunt as build too
 
 ### Update ###
 
+#### Jan 2026
+* Complete UI revamp with retro CRT terminal aesthetic
+* Add multi-line ASCII art weather icons
+* Implement unified CSS border frame design
+* Add amber phosphor color theme
+* Add favicon set with multi-device support (iOS, Android, desktop)
+* Switch from pnpm to npm
+
 #### Sometime back in 2020
 * Complete code refactor using Modular Javascript Design Pattern
 * Replace Grunt with webpack

@@ -4,6 +4,7 @@ import locationService from '../services/location.service';
 import weatherService from '../services/weather.service';
 import imageService from '../services/image.service';
 import formatService from '../services/format.service';
+import tipsService, { TipsResponse } from '../services/tips.service';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
 // Import components
@@ -13,6 +14,7 @@ import TemperatureDisplay from './TemperatureDisplay';
 import WeatherDescription from './WeatherDescription';
 import UnitConverter from './UnitConverter';
 import WeatherStats from './WeatherStats';
+import WeatherTips from './WeatherTips';
 import GlitchImage from './GlitchImage';
 import '../../styles/tailwind.css';
 
@@ -92,6 +94,35 @@ const AppContent: FC = () => {
     },
     enabled: !!locationData?.cityName,
     staleTime: Infinity,
+  });
+
+  // 4. Tips Query (Gemini AI)
+  const {
+    data: tipsData,
+    isLoading: isTipsLoading,
+    isError: isTipsError,
+    error: tipsError,
+  } = useQuery<TipsResponse, Error>({
+    queryKey: ['tips', locationData?.cityName, weatherData?.currently?.summary, currentUnit],
+    queryFn: () => {
+      if (!locationData || !weatherData) throw new Error('Data not available');
+      const temp = currentUnit === 'C'
+        ? weatherData.currently.apparentTemperature
+        : formatService.celsiusFahrenheit(weatherData.currently.apparentTemperature);
+      return tipsService.getTips({
+        temperature: Math.round(temp),
+        temperatureUnit: currentUnit as 'C' | 'F',
+        weatherSummary: weatherData.currently.summary,
+        cityName: locationData.cityName,
+        stateName: locationData.stateName,
+        countryName: locationData.countryName,
+        humidity: weatherData.currently.humidity,
+        windSpeed: weatherData.currently.windSpeed,
+      });
+    },
+    enabled: !!locationData && !!weatherData,
+    staleTime: 1000 * 60 * 30, // 30 minutes
+    retry: 1,
   });
 
   const isLoading = isLocationLoading || (!!locationData && (isWeatherLoading || isImageLoading));
@@ -187,6 +218,16 @@ const AppContent: FC = () => {
                   theme={theme}
                 />
               )}
+
+              {/* AI Weather Tips */}
+              {weatherData && locationData && (
+                <WeatherTips
+                  tips={tipsData as TipsResponse}
+                  isLoading={isTipsLoading}
+                  error={isTipsError ? (tipsError?.message || 'Failed to load tips') : null}
+                  theme={theme}
+                />
+              )}
             </div>
 
             {/* Terminal Footer */}
@@ -219,12 +260,14 @@ const AppContent: FC = () => {
                 </span>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Blinking cursor at bottom */}
-        <div className={`fixed bottom-4 left-4 font-mono ${primaryColor} text-sm z-20`}>
-          {'>'} <span className="animate-cursor-blink">█</span>
+            {/* Command prompt - waiting for input */}
+            <div className={`px-4 py-3 border-t ${borderColor}`}>
+              <div className={`font-mono text-sm ${primaryColor}`}>
+                {'>'} <span className="animate-cursor-blink">█</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

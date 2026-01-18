@@ -5,6 +5,13 @@
 @layer base {
   html {
     @apply box-border;
+    font-size: 16px;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: 18px;
+    }
   }
 
   *,
@@ -14,9 +21,17 @@
   }
 
   body {
-    @apply p-0 m-0 h-screen w-screen overflow-hidden;
+    @apply p-0 m-0 min-h-screen w-screen;
     font-family: 'VT323', 'Fira Code', monospace;
     background-color: #0a0a08;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  @media (min-width: 640px) {
+    body {
+      @apply h-screen;
+    }
   }
 }
 
