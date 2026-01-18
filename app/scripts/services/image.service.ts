@@ -2,85 +2,99 @@
  * Project Name: Weather App | Image Service
  * Author: Lucas Bittar Magnani
  * Created: 20170201
- * Updated: [Current Date - Will be filled by system or manually if needed] To reflect usage of fetch API.
+ * Updated: 2026-01-17 - Migrated from Google CSE to Pexels API
  */
 'use strict';
 
-// Define interfaces for API response and resolved image data
-interface GoogleSearchImageItem {
-  link: string;
-  mime: string;
-  image: {
-    width: number;
-    height: number;
-    contextLink: string;
-  };
-}
-
-interface GoogleSearchResponse {
-  items?: GoogleSearchImageItem[];
-  error?: { // Structure for error response from Google API
-    message: string;
-  };
-  // other fields from response if needed
-}
-
-interface ImageDetails {
-  url: string;
-  type: string;
+// Pexels API response interfaces
+interface PexelsPhoto {
+  id: number;
   width: number;
   height: number;
-  contextLink: string;
+  url: string;
+  photographer: string;
+  photographer_url: string;
+  photographer_id: number;
+  avg_color: string;
+  src: {
+    original: string;
+    large2x: string;
+    large: string;
+    medium: string;
+    small: string;
+    portrait: string;
+    landscape: string;
+    tiny: string;
+  };
+  liked: boolean;
+  alt: string;
 }
 
-// Calls Google Custom Search Engine API and returns random image details
-const searchImage = function(query: string): Promise<ImageDetails | null> {
-  const GOOGLE_IMAGES_API_KEY = process.env.GOOGLE_IMAGES_API_KEY;
-  const GOOGLE_IMAGES_CSE_ID = process.env.GOOGLE_IMAGES_CSE_ID;
+interface PexelsSearchResponse {
+  total_results: number;
+  page: number;
+  per_page: number;
+  photos: PexelsPhoto[];
+  next_page?: string;
+}
+
+// ImageDetails interface for the application
+export interface ImageDetails {
+  url: string;
+  photographer: string;
+  photographerUrl: string;
+  width: number;
+  height: number;
+}
+
+// Calls Pexels API and returns random image details
+const searchImage = function (query: string): Promise<ImageDetails | null> {
+  const PEXELS_API_KEY = import.meta.env.VITE_PEXELS_API_KEY;
 
   return new Promise((resolve, reject) => {
-    const customImageSize = 'xxlarge';
-    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_IMAGES_API_KEY}&cx=${GOOGLE_IMAGES_CSE_ID}&q=${encodeURIComponent(query)}&searchType=image&imgSize=${customImageSize}`;
+    if (!PEXELS_API_KEY) {
+      console.error('PEXELS_API_KEY environment variable is not defined.');
+      reject(new Error('PEXELS_API_KEY environment variable is not defined.'));
+      return;
+    }
 
-    console.log('Fetching image for: ' + query + ' via Google CSE API');
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&per_page=15`;
 
-    fetch(url)
-      .then(async response => { // Make this async to use await for parsing json
+    console.log('Fetching image for: ' + query + ' via Pexels API');
+
+    fetch(url, {
+      headers: {
+        Authorization: PEXELS_API_KEY,
+      },
+    })
+      .then(async (response) => {
         if (!response.ok) {
-          // Attempt to parse the error body
-          const errData = await response.json().catch(parseErr => {
-            // If response.json() itself fails (e.g., not JSON), throw a specific error.
-            // This will be caught by the main .catch() block.
+          const errData = await response.json().catch((parseErr) => {
             console.error('Error parsing error JSON:', parseErr);
-            throw new Error(`API request failed with status ${response.status}: Could not parse error response body.`);
+            throw new Error(
+              `API request failed with status ${response.status}: Could not parse error response body.`
+            );
           });
-          // If response.json() succeeded, then errData is the parsed error object.
-          const message = errData.error?.message || `Unknown error`;
-          console.error('API Error:', errData); // Log the structured error from API
-          throw new Error(`API request failed with status ${response.status}: ${message}`);
+          const message = errData.error || `Unknown error`;
+          console.error('API Error:', errData);
+          throw new Error(
+            `API request failed with status ${response.status}: ${message}`
+          );
         }
-        return response.json() as Promise<GoogleSearchResponse>; // If response is ok, parse and return data
+        return response.json() as Promise<PexelsSearchResponse>;
       })
-      .then((data: GoogleSearchResponse) => { // Explicitly type data here
-        if (data && data.items && data.items.length > 0) { // Add check for data itself
-          const max = data.items.length;
-          // To make tests predictable, let's not use Math.random here.
-          // We'll always pick the first item if it exists.
-          // const random = Math.floor(Math.random() * max);
-          const imageItem: GoogleSearchImageItem = data.items[0]; // Use first item
-
-          if (!imageItem.link || !imageItem.image) {
-            console.log('First image item is missing link or image details for: ' + query);
-            resolve(null); // Or reject, depending on desired strictness
-            return;
-          }
+      .then((data: PexelsSearchResponse) => {
+        if (data && data.photos && data.photos.length > 0) {
+          // Pick a random photo from the results for variety
+          const randomIndex = Math.floor(Math.random() * data.photos.length);
+          const photo = data.photos[randomIndex];
 
           resolve({
-            url: imageItem.link,
-            type: imageItem.mime,
-            width: imageItem.image.width,
-            height: imageItem.image.height,
-            contextLink: imageItem.image.contextLink
+            url: photo.src.large2x || photo.src.large || photo.src.original,
+            photographer: photo.photographer,
+            photographerUrl: photo.photographer_url,
+            width: photo.width,
+            height: photo.height,
           });
         } else {
           console.log('No images found for: ' + query);
@@ -88,15 +102,13 @@ const searchImage = function(query: string): Promise<ImageDetails | null> {
         }
       })
       .catch((err: Error) => {
-        // Avoid double logging if it's an error we've already processed
         if (!String(err.message).startsWith('API request failed with status')) {
           console.error('Error fetching image:', err);
         }
-        // Ensure we always reject with an Error object
         if (err instanceof Error) {
-            reject(err);
+          reject(err);
         } else {
-            reject(new Error(String(err)));
+          reject(new Error(String(err)));
         }
       });
   });
@@ -112,4 +124,4 @@ const imageServiceInstance: ImageService = {
 
 export default imageServiceInstance;
 
-export type { GoogleSearchResponse, GoogleSearchImageItem, ImageDetails };
+export type { PexelsSearchResponse, PexelsPhoto };
