@@ -14,7 +14,6 @@ import WeatherDescription from './WeatherDescription';
 import UnitConverter from './UnitConverter';
 import WeatherStats from './WeatherStats';
 import GlitchImage from './GlitchImage';
-import ThemeSwitcher from './ThemeSwitcher';
 import '../../styles/tailwind.css';
 
 // Interfaces
@@ -112,6 +111,10 @@ const AppContent: FC = () => {
   const primaryColor = theme === 'amber' ? 'text-crt-amber' : 'text-crt-green';
   const dimColor = theme === 'amber' ? 'text-crt-amberDim' : 'text-crt-greenDim';
   const brightColor = theme === 'amber' ? 'text-crt-amberBright' : 'text-crt-greenBright';
+  const borderColor = theme === 'amber' ? 'border-crt-amber/60' : 'border-crt-green/60';
+  const glowStyle = theme === 'amber'
+    ? { boxShadow: '0 0 20px rgba(255, 176, 0, 0.15), inset 0 0 40px rgba(255, 176, 0, 0.03)' }
+    : { boxShadow: '0 0 20px rgba(0, 255, 65, 0.15), inset 0 0 40px rgba(0, 255, 65, 0.03)' };
 
   return (
     <>
@@ -131,58 +134,50 @@ const AppContent: FC = () => {
 
         {/* Main Terminal Content */}
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
-          {/* Terminal Header */}
-          <div className="w-full max-w-lg mb-6">
-            {/* Top border */}
-            <div className={`font-mono ${dimColor} text-sm`}>
-              ╔══════════════════════════════════════════════════════════╗
+          {/* Terminal Window */}
+          <div
+            className={`w-full max-w-lg border ${borderColor} bg-crt-black/80 backdrop-blur-sm`}
+            style={glowStyle}
+          >
+            {/* Terminal Header */}
+            <div className={`border-b ${borderColor} px-4 py-2`}>
+              <div className={`font-mono text-sm flex justify-between items-center`}>
+                <span className={dimColor}>
+                  [<span className={brightColor} style={{ textShadow: `0 0 8px ${colors.primary}` }}>
+                    WEATHER_TERMINAL
+                  </span>] v3.0
+                </span>
+                <span className={primaryColor}>
+                  ONLINE <span className="animate-pulse">●</span>
+                </span>
+              </div>
             </div>
-            {/* Title bar */}
-            <div className={`font-mono ${dimColor} text-sm flex justify-between px-2`}>
-              <span>
-                ║ <span className={brightColor} style={{ textShadow: `0 0 8px ${colors.primary}` }}>
-                  WEATHER_TERMINAL
-                </span> v3.0
-              </span>
-              <span className={primaryColor}>
-                [ONLINE] <span className="animate-pulse">●</span> ║
-              </span>
-            </div>
-            {/* Divider */}
-            <div className={`font-mono ${dimColor} text-sm`}>
-              ╠══════════════════════════════════════════════════════════╣
-            </div>
-          </div>
 
-          {/* Weather Content */}
-          <div className="w-full max-w-lg">
-            {/* Location */}
-            {locationData && formatService && (
-              <LocationDisplay locationData={locationData} formatService={formatService} theme={theme} />
-            )}
+            {/* Weather Content */}
+            <div className="px-4 py-6">
+              {/* Location */}
+              {locationData && formatService && (
+                <LocationDisplay locationData={locationData} formatService={formatService} theme={theme} />
+              )}
 
-            {/* Temperature */}
-            {weatherData && formatService && (
-              <TemperatureDisplay
-                weatherData={weatherData}
-                unit={currentUnit}
-                formatService={formatService}
-                theme={theme}
-              />
-            )}
+              {/* Temperature */}
+              {weatherData && formatService && (
+                <TemperatureDisplay
+                  weatherData={weatherData}
+                  unit={currentUnit}
+                  formatService={formatService}
+                  theme={theme}
+                />
+              )}
 
-            {/* Weather Icon & Description */}
-            {weatherData && <WeatherDescription weatherData={weatherData} theme={theme} />}
+              {/* Weather Icon & Description */}
+              {weatherData && <WeatherDescription weatherData={weatherData} theme={theme} />}
 
-            {/* Unit Toggle */}
-            <UnitConverter currentUnit={currentUnit} setCurrentUnit={setCurrentUnit} theme={theme} />
+              {/* Unit Toggle */}
+              <UnitConverter currentUnit={currentUnit} setCurrentUnit={setCurrentUnit} theme={theme} />
 
-            {/* Theme Switcher */}
-            <ThemeSwitcher />
-
-            {/* Weather Stats */}
-            {weatherData && (
-              <div className="flex justify-center">
+              {/* Weather Stats */}
+              {weatherData && (
                 <WeatherStats
                   humidity={weatherData.currently.humidity}
                   windSpeed={weatherData.currently.windSpeed}
@@ -191,51 +186,38 @@ const AppContent: FC = () => {
                   unit={currentUnit}
                   theme={theme}
                 />
-              </div>
-            )}
-          </div>
-
-          {/* Terminal Footer */}
-          <div className="w-full max-w-lg mt-6">
-            <div className={`font-mono ${dimColor} text-sm`}>
-              ╠══════════════════════════════════════════════════════════╣
+              )}
             </div>
-            {/* Image source */}
-            <div className={`font-mono ${dimColor} text-xs px-2 py-1 flex justify-between items-center`}>
-              <span>
-                ║ IMG_SOURCE:{' '}
-                {imageData && imageData.photographer && (
+
+            {/* Terminal Footer */}
+            <div className={`border-t ${borderColor} px-4 py-2`}>
+              <div className={`font-mono text-xs ${dimColor} flex flex-col sm:flex-row sm:justify-between gap-1`}>
+                <span>
+                  {'>'} IMG:{' '}
+                  {imageData && imageData.photographer && (
+                    <a
+                      href={imageData.photographerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${primaryColor} hover:underline`}
+                    >
+                      {imageData.photographer.toUpperCase()}
+                    </a>
+                  )}{' '}
+                  @ PEXELS
+                </span>
+                <span>
+                  {'>'} BY:{' '}
                   <a
-                    href={imageData.photographerUrl}
+                    href="https://www.lucasbittar.dev/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`${primaryColor} hover:${brightColor} transition-colors`}
+                    className={`${primaryColor} hover:underline`}
                   >
-                    {imageData.photographer.toUpperCase()}
+                    LUCAS_BITTAR
                   </a>
-                )}{' '}
-                @ PEXELS
-              </span>
-              <span>║</span>
-            </div>
-            {/* Author */}
-            <div className={`font-mono ${dimColor} text-xs px-2 py-1 flex justify-between items-center`}>
-              <span>
-                ║ AUTHOR:{' '}
-                <a
-                  href="https://www.lucasbittar.dev/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${primaryColor} hover:${brightColor} transition-colors`}
-                >
-                  LUCAS_BITTAR
-                </a>
-              </span>
-              <span>║</span>
-            </div>
-            {/* Bottom border */}
-            <div className={`font-mono ${dimColor} text-sm`}>
-              ╚══════════════════════════════════════════════════════════╝
+                </span>
+              </div>
             </div>
           </div>
         </div>
