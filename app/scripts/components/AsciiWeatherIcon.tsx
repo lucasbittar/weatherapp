@@ -1,157 +1,284 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
+import { Theme } from '../context/ThemeContext';
 
 interface AsciiWeatherIconProps {
   icon: string;
+  theme: Theme;
+  size?: 'small' | 'large';
   className?: string;
 }
 
+// Impressive multi-line ASCII weather icons
 const asciiIcons: Record<string, string[]> = {
-  CLEAR_DAY: [
-    '    \\   |   /    ',
-    '      .---.      ',
-    '  -- (     ) --  ',
-    '      `---\'      ',
-    '    /   |   \\    ',
+  'clear-day': [
+    '       \\   |   /       ',
+    '        \\  |  /        ',
+    '     ----     ----     ',
+    '   --    .---.    --   ',
+    '  -    (       )    -  ',
+    '   --   `---\`   --   ',
+    '     ----     ----     ',
+    '        /  |  \\        ',
+    '       /   |   \\       ',
   ],
-  CLEAR_NIGHT: [
-    '       _.-.      ',
-    '      (    ).    ',
-    '     /       \\   ',
-    '    |    *    |  ',
-    '     \\ .____./ * ',
+  'clear-night': [
+    '            *          ',
+    '        _..._    *     ',
+    '      .\'     `.        ',
+    '     /    *    \\   *   ',
+    '    |           |      ',
+    '    |   *       |      ',
+    '     \\         /       ',
+    '   *  `._____.\' *      ',
+    '            *          ',
   ],
-  PARTLY_CLOUDY_DAY: [
-    '   \\  /         ',
-    ' _ /\"\".-.       ',
-    '   \\_( _ ).     ',
-    '   /(___(__) )   ',
-    '              ',
+  'partly-cloudy-day': [
+    '      \\  |  /          ',
+    '       .---.           ',
+    '    --(     )  .---.   ',
+    '       `---\'.-\'    `-. ',
+    '          (          ) ',
+    '           `-.____.-\' )',
+    '         (___________) ',
+    '                       ',
   ],
-  PARTLY_CLOUDY_NIGHT: [
-    '     _  .-.      ',
-    '    (_)(   ).    ',
-    '      (___(__) ) ',
-    '                 ',
-    '                 ',
+  'partly-cloudy-night': [
+    '         _..._         ',
+    '       .\'  *  `.       ',
+    '      /    .----.      ',
+    '     |  .-\'      `-.   ',
+    '      `(            )  ',
+    '        `-.______.-\')  ',
+    '       (______________)',
+    '                       ',
   ],
-  CLOUDY: [
-    '                 ',
-    '      .--.       ',
-    '   .-(    ).     ',
-    '  (___.__)__)    ',
-    '                 ',
+  'cloudy': [
+    '                       ',
+    '         .---.         ',
+    '      .-\'     `-.      ',
+    '    .\'           `.    ',
+    '   (               )   ',
+    '    `-.         .-\'    ',
+    '   .--`-._____.-\'      ',
+    '  (________________)   ',
+    '                       ',
   ],
-  RAIN: [
-    '      .--.       ',
-    '   .-(    ).     ',
-    '  (___.__)__)    ',
-    '   ‚ ‚ ‚ ‚ ‚     ',
-    '  ‚ ‚ ‚ ‚ ‚      ',
+  'rain': [
+    '         .---.         ',
+    '      .-\'     `-.      ',
+    '    (             )    ',
+    '     `-.______.-\'      ',
+    '   (______________)    ',
+    '    /  /  /  /  /      ',
+    '   /  /  /  /  /       ',
+    '  /  /  /  /  /        ',
+    '                       ',
   ],
-  SNOW: [
-    '      .--.       ',
-    '   .-(    ).     ',
-    '  (___.__)__)    ',
-    '   * * * * *     ',
-    '  * * * * *      ',
+  'heavy-rain': [
+    '         .---.         ',
+    '      .-\'     `-.      ',
+    '    (             )    ',
+    '     `-.______.-\'      ',
+    '   (______________)    ',
+    '   ||| ||| ||| |||     ',
+    '   ||| ||| ||| |||     ',
+    '   ||| ||| ||| |||     ',
+    '                       ',
   ],
-  SLEET: [
-    '      .--.       ',
-    '   .-(    ).     ',
-    '  (___.__)__)    ',
-    '   ‚ * ‚ * ‚     ',
-    '  * ‚ * ‚ *      ',
+  'snow': [
+    '         .---.         ',
+    '      .-\'     `-.      ',
+    '    (             )    ',
+    '     `-.______.-\'      ',
+    '   (______________)    ',
+    '    *  *  *  *  *      ',
+    '   *  *  *  *  *       ',
+    '    *  *  *  *  *      ',
+    '                       ',
   ],
-  THUNDERSTORM_SHOWERS_DAY: [
-    '      .--.       ',
-    '   .-(    ).     ',
-    '  (___.__)__)    ',
-    '    ⚡‚ ‚⚡‚      ',
-    '   ‚ ‚⚡‚ ‚       ',
+  'sleet': [
+    '         .---.         ',
+    '      .-\'     `-.      ',
+    '    (             )    ',
+    '     `-.______.-\'      ',
+    '   (______________)    ',
+    '    /  *  /  *  /      ',
+    '   *  /  *  /  *       ',
+    '    /  *  /  *  /      ',
+    '                       ',
   ],
-  FOG: [
-    '                 ',
-    '  _ - _ - _ -    ',
-    '   _ - _ - _     ',
-    '  _ - _ - _ -    ',
-    '                 ',
+  'wind': [
+    '                       ',
+    '    ~~~~>              ',
+    '  ========>            ',
+    '    ~~~~>    =====>    ',
+    '  ============>        ',
+    '      ~~~~>   ====>    ',
+    '  ========>            ',
+    '      ~~~~>            ',
+    '                       ',
+  ],
+  'fog': [
+    '                       ',
+    '   _______________     ',
+    '  =================    ',
+    '   _______________     ',
+    '  =================    ',
+    '   _______________     ',
+    '  =================    ',
+    '                       ',
+    '                       ',
+  ],
+  'thunderstorm': [
+    '         .---.         ',
+    '      .-\'     `-.      ',
+    '    (             )    ',
+    '     `-.______.-\'      ',
+    '   (______________)    ',
+    '      /\\  /  /        ',
+    '     /  \\/  /  /       ',
+    '    /   /\\ /  /        ',
+    '             \\/        ',
+  ],
+  'hail': [
+    '         .---.         ',
+    '      .-\'     `-.      ',
+    '    (             )    ',
+    '     `-.______.-\'      ',
+    '   (______________)    ',
+    '    o  o  o  o  o      ',
+    '   o  o  o  o  o       ',
+    '    o  o  o  o  o      ',
+    '                       ',
+  ],
+  'tornado': [
+    '      .========.       ',
+    '       \\      /        ',
+    '        \\    /         ',
+    '         \\  /          ',
+    '          \\/           ',
+    '          ||           ',
+    '          ||           ',
+    '          ||           ',
+    '          \\/           ',
+  ],
+  'hurricane': [
+    '        .---.          ',
+    '      ./     \\.        ',
+    '     / .-\"\"\"-. \\       ',
+    '    | /   @   \\ |      ',
+    '    | \\       / |      ',
+    '     \\ `-...-\' /       ',
+    '      \\.     ./        ',
+    '        `---\'          ',
+    '                       ',
   ],
 };
 
-// Large ASCII art for main display
-const largeAsciiIcons: Record<string, string[]> = {
-  CLEAR_DAY: [
-    '        \\   |   /        ',
-    '         \\  |  /         ',
-    '      --- .---. ---      ',
-    '         (     )         ',
-    '      --- `---\' ---      ',
-    '         /  |  \\         ',
-    '        /   |   \\        ',
+// Compact icons for smaller displays
+const compactIcons: Record<string, string[]> = {
+  'clear-day': [
+    '  \\ | /  ',
+    ' --   -- ',
+    ' (     ) ',
+    ' --   -- ',
+    '  / | \\  ',
   ],
-  CLOUDY: [
-    '                         ',
-    '          .-~~~-.        ',
-    '      .-(        )-.     ',
-    '     (              )    ',
-    '      `-.__    __.-\'     ',
-    '    .-(    `--\'    )-.   ',
-    '   (__________________)  ',
+  'clear-night': [
+    '    *    ',
+    '  .---.  ',
+    ' /  *  \\ ',
+    ' \\     / ',
+    '  `---\'  ',
   ],
-  RAIN: [
-    '          .-~~~-.        ',
-    '      .-(        )-.     ',
-    '     (              )    ',
-    '      `-.________.-\'     ',
-    '       ‚  ‚  ‚  ‚  ‚     ',
-    '      ‚  ‚  ‚  ‚  ‚      ',
-    '       ‚  ‚  ‚  ‚  ‚     ',
+  'cloudy': [
+    '  .---.  ',
+    ' (     ) ',
+    '(______) ',
   ],
-  SNOW: [
-    '          .-~~~-.        ',
-    '      .-(        )-.     ',
-    '     (              )    ',
-    '      `-.________.-\'     ',
-    '       *  *  *  *  *     ',
-    '      *  *  *  *  *      ',
-    '       *  *  *  *  *     ',
+  'rain': [
+    '  .---.  ',
+    ' (_____))',
+    ' / / / / ',
+    '/ / / /  ',
   ],
-  THUNDERSTORM_SHOWERS_DAY: [
-    '          .-~~~-.        ',
-    '      .-(        )-.     ',
-    '     (              )    ',
-    '      `-.________.-\'     ',
-    '        ⚡  ‚  ⚡  ‚      ',
-    '       ‚  ⚡  ‚  ⚡       ',
-    '        ‚  ‚  ‚  ‚       ',
+  'snow': [
+    '  .---.  ',
+    ' (_____))',
+    ' * * * * ',
+    '* * * *  ',
+  ],
+  'thunderstorm': [
+    '  .---.  ',
+    ' (_____))',
+    '  /\\/ /  ',
+    ' /  \\/   ',
+  ],
+  'fog': [
+    ' _______ ',
+    '========= ',
+    ' _______ ',
+    '========= ',
+  ],
+  'wind': [
+    '  ~~~>   ',
+    '=====>   ',
+    '  ~~~>   ',
   ],
 };
 
-const AsciiWeatherIcon: FC<AsciiWeatherIconProps> = ({ icon, className = '' }) => {
-  const iconKey = icon.toUpperCase().replace(/-/g, '_');
-  const asciiArt = asciiIcons[iconKey] || asciiIcons.CLOUDY;
+// Fallback mapping for icon names
+const iconAliases: Record<string, string> = {
+  'partly-cloudy-day': 'partly-cloudy-day',
+  'partly-cloudy-night': 'partly-cloudy-night',
+  'thunderstorm-showers-day': 'thunderstorm',
+  'thunderstorm-showers-night': 'thunderstorm',
+  'showers-day': 'rain',
+  'showers-night': 'rain',
+  'heavy-rain': 'heavy-rain',
+  'light-rain': 'rain',
+  'drizzle': 'rain',
+  'flurries': 'snow',
+  'light-snow': 'snow',
+  'heavy-snow': 'snow',
+  'blizzard': 'snow',
+  'freezing-rain': 'sleet',
+  'ice': 'hail',
+  'dust': 'fog',
+  'smoke': 'fog',
+  'haze': 'fog',
+  'mist': 'fog',
+};
+
+const getIconKey = (icon: string): string => {
+  const normalized = icon.toLowerCase().replace(/_/g, '-');
+  return iconAliases[normalized] || normalized;
+};
+
+const AsciiWeatherIcon: FC<AsciiWeatherIconProps> = ({
+  icon,
+  theme,
+  size = 'large',
+  className = ''
+}) => {
+  const iconKey = getIconKey(icon);
+  const icons = size === 'large' ? asciiIcons : compactIcons;
+  const asciiArt = icons[iconKey] || icons['cloudy'] || asciiIcons['cloudy'];
+
+  // Theme colors
+  const colorClass = theme === 'amber' ? 'text-crt-amberBright' : 'text-crt-greenBright';
+  const glowColor = theme === 'amber'
+    ? '0 0 10px #ffb000, 0 0 20px rgba(255, 176, 0, 0.6), 0 0 30px rgba(255, 150, 0, 0.3)'
+    : '0 0 10px #00ff41, 0 0 20px rgba(0, 255, 65, 0.6), 0 0 30px rgba(0, 255, 0, 0.3)';
 
   return (
-    <pre className={`font-mono text-crt-amber leading-none text-xs sm:text-sm ${className}`} style={{
-      textShadow: '0 0 8px #ffb000, 0 0 16px rgba(255, 176, 0, 0.5)',
-    }}>
-      {asciiArt.map((line, i) => (
-        <div key={i}>{line}</div>
-      ))}
-    </pre>
-  );
-};
-
-// Large version for main display
-export const LargeAsciiWeatherIcon: FC<AsciiWeatherIconProps> = ({ icon, className = '' }) => {
-  const iconKey = icon.toUpperCase().replace(/-/g, '_');
-  // Fall back to small icon if large doesn't exist
-  const asciiArt = largeAsciiIcons[iconKey] || largeAsciiIcons.CLOUDY || asciiIcons[iconKey] || asciiIcons.CLOUDY;
-
-  return (
-    <pre className={`font-mono text-crt-amberBright leading-tight text-sm sm:text-base ${className}`} style={{
-      textShadow: '0 0 10px #ffb000, 0 0 20px rgba(255, 176, 0, 0.6), 0 0 30px rgba(255, 150, 0, 0.3)',
-    }}>
+    <pre
+      className={`font-mono leading-none whitespace-pre ${colorClass} ${className}`}
+      style={{
+        textShadow: glowColor,
+        fontSize: size === 'large' ? '0.75rem' : '0.625rem',
+      }}
+    >
       {asciiArt.map((line, i) => (
         <div key={i}>{line}</div>
       ))}

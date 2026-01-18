@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { Theme } from '../context/ThemeContext';
+import AsciiWeatherIcon from './AsciiWeatherIcon';
 
 interface WeatherCurrently {
   apparentTemperature?: number;
@@ -18,23 +19,6 @@ interface WeatherDescriptionProps {
   theme: Theme;
 }
 
-// ASCII weather icons
-const getAsciiIcon = (icon: string): string => {
-  const icons: Record<string, string> = {
-    'clear-day': '☀',
-    'clear-night': '☾',
-    'rain': '🌧',
-    'snow': '❄',
-    'sleet': '🌨',
-    'wind': '💨',
-    'fog': '🌫',
-    'cloudy': '☁',
-    'partly-cloudy-day': '⛅',
-    'partly-cloudy-night': '☁☾',
-  };
-  return icons[icon] || '☁';
-};
-
 const WeatherDescription: FC<WeatherDescriptionProps> = ({ weatherData, theme }) => {
   if (!weatherData || !weatherData.currently) {
     return null;
@@ -46,28 +30,23 @@ const WeatherDescription: FC<WeatherDescriptionProps> = ({ weatherData, theme })
   const brightClass = theme === 'amber' ? 'text-crt-amberBright' : 'text-crt-greenBright';
   const dimClass = theme === 'amber' ? 'text-crt-amberDim' : 'text-crt-greenDim';
 
-  const icon = getAsciiIcon(weatherData.currently.icon);
-
   return (
-    <div className="font-mono text-center my-4">
-      <div className="flex items-center justify-center gap-4">
-        {/* Weather Icon */}
-        <span
-          className={`text-4xl ${brightClass}`}
-          style={{
-            textShadow: `0 0 10px ${primaryColor}, 0 0 20px ${primaryColor}80`,
-          }}
-        >
-          {icon}
-        </span>
+    <div className="font-mono text-center my-6">
+      {/* ASCII Weather Icon */}
+      <div className="flex justify-center mb-4">
+        <AsciiWeatherIcon
+          icon={weatherData.currently.icon}
+          theme={theme}
+          size="large"
+        />
+      </div>
 
-        {/* Weather Summary */}
-        <div className={`${primaryClass} text-lg uppercase tracking-wide`} style={{
-          textShadow: `0 0 5px ${primaryColor}`,
-        }}>
-          <span className={dimClass}>{'>'}</span> STATUS:{' '}
-          <span className={brightClass}>{weatherData.currently.summary}</span>
-        </div>
+      {/* Weather Summary */}
+      <div className={`${primaryClass} text-lg uppercase tracking-wide`} style={{
+        textShadow: `0 0 5px ${primaryColor}`,
+      }}>
+        <span className={dimClass}>{'>'}</span> STATUS:{' '}
+        <span className={brightClass}>{weatherData.currently.summary}</span>
       </div>
     </div>
   );
