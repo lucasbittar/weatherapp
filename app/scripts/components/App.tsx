@@ -14,7 +14,6 @@ import WeatherDescription from './WeatherDescription';
 import UnitConverter from './UnitConverter';
 import WeatherStats from './WeatherStats';
 import GlitchImage from './GlitchImage';
-import ThemeSwitcher from './ThemeSwitcher';
 import '../../styles/tailwind.css';
 
 // Interfaces
@@ -176,9 +175,6 @@ const AppContent: FC = () => {
 
             {/* Unit Toggle */}
             <UnitConverter currentUnit={currentUnit} setCurrentUnit={setCurrentUnit} theme={theme} />
-
-            {/* Theme Switcher */}
-            <ThemeSwitcher />
 
             {/* Weather Stats */}
             {weatherData && (
