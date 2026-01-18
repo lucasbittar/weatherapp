@@ -1,5 +1,6 @@
 import { useState, FC } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Analytics } from '@vercel/analytics/react';
 import locationService from '../services/location.service';
 import weatherService from '../services/weather.service';
 import imageService from '../services/image.service';
@@ -147,6 +148,7 @@ const AppContent: FC = () => {
 
   return (
     <>
+      <Analytics />
       <LoadingIndicator hidden={!isLoading && allDataLoaded} error={errorMessage()} theme={theme} />
 
       <div className={`crt-screen min-h-screen ${allDataLoaded ? 'block' : 'hidden'}`}>
