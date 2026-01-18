@@ -18,13 +18,17 @@ const WeatherStats: FC<WeatherStatsProps> = ({
   unit,
   theme,
 }) => {
-  // Theme colors
+  // Theme colors - keeping amber as main
   const primaryColor = theme === 'amber' ? '#ffb000' : '#00ff41';
   const brightClass = theme === 'amber' ? 'text-crt-amberBright' : 'text-crt-greenBright';
   const dimClass = theme === 'amber' ? 'text-crt-amberDim' : 'text-crt-greenDim';
-  const primaryClass = theme === 'amber' ? 'text-crt-amber' : 'text-crt-green';
-  const borderClass = theme === 'amber' ? 'border-crt-amber/40' : 'border-crt-green/40';
-  const bgClass = theme === 'amber' ? 'bg-crt-amber/5' : 'bg-crt-green/5';
+
+  // Accent colors for each stat - subtle variety
+  const statColors = [
+    { accent: '#ff6b9d', glow: 'rgba(255, 107, 157, 0.6)' }, // Pink for wind
+    { accent: '#9d6bff', glow: 'rgba(157, 107, 255, 0.6)' }, // Purple for humidity
+    { accent: '#6bff9d', glow: 'rgba(107, 255, 157, 0.6)' }, // Mint for actual temp
+  ];
 
   const stats = [];
 
@@ -34,6 +38,7 @@ const WeatherStats: FC<WeatherStatsProps> = ({
       value: Math.round(windSpeed),
       unit: 'km/h',
       icon: '≋',
+      colorIndex: 0,
     });
   }
 
@@ -43,6 +48,7 @@ const WeatherStats: FC<WeatherStatsProps> = ({
       value: humidity,
       unit: '%',
       icon: '◈',
+      colorIndex: 1,
     });
   }
 
@@ -52,6 +58,7 @@ const WeatherStats: FC<WeatherStatsProps> = ({
       value: Math.round(unit === 'C' ? actualTemp : (actualTemp * 9) / 5 + 32),
       unit: `°${unit}`,
       icon: '◉',
+      colorIndex: 2,
     });
   }
 
@@ -73,32 +80,45 @@ const WeatherStats: FC<WeatherStatsProps> = ({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-3">
-        {stats.map((stat, index) => (
-          <div
-            key={index}
-            className={`${bgClass} border ${borderClass} p-3 text-center`}
-          >
-            {/* Icon */}
+        {stats.map((stat, index) => {
+          const colors = statColors[stat.colorIndex];
+          return (
             <div
-              className={`${primaryClass} text-2xl mb-1`}
-              style={{ textShadow: `0 0 10px ${primaryColor}` }}
+              key={index}
+              className="p-3 text-center border"
+              style={{
+                borderColor: `${colors.accent}40`,
+                background: `linear-gradient(135deg, ${colors.accent}10 0%, ${colors.accent}05 100%)`,
+              }}
             >
-              {stat.icon}
+              {/* Icon */}
+              <div
+                className="text-2xl mb-1"
+                style={{
+                  color: colors.accent,
+                  textShadow: `0 0 10px ${colors.glow}`,
+                }}
+              >
+                {stat.icon}
+              </div>
+              {/* Value */}
+              <div
+                className={`${brightClass} text-2xl font-mono`}
+                style={{ textShadow: `0 0 8px ${primaryColor}` }}
+              >
+                {stat.value}
+                <span className={`${dimClass} text-base ml-1`}>{stat.unit}</span>
+              </div>
+              {/* Label */}
+              <div
+                className="text-xs font-mono mt-1 tracking-wider"
+                style={{ color: `${colors.accent}cc` }}
+              >
+                {stat.label}
+              </div>
             </div>
-            {/* Value */}
-            <div
-              className={`${brightClass} text-2xl font-mono`}
-              style={{ textShadow: `0 0 8px ${primaryColor}` }}
-            >
-              {stat.value}
-              <span className={`${dimClass} text-base ml-1`}>{stat.unit}</span>
-            </div>
-            {/* Label */}
-            <div className={`${dimClass} text-xs font-mono mt-1 tracking-wider`}>
-              {stat.label}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -97,21 +97,19 @@ const AppContent: FC = () => {
   });
 
   // 4. Tips Query (Gemini AI)
+  // Tips query - loads once based on location and weather, not affected by unit changes
   const {
     data: tipsData,
     isLoading: isTipsLoading,
     isError: isTipsError,
     error: tipsError,
   } = useQuery<TipsResponse, Error>({
-    queryKey: ['tips', locationData?.cityName, weatherData?.currently?.summary, currentUnit],
+    queryKey: ['tips', locationData?.cityName, weatherData?.currently?.summary],
     queryFn: () => {
       if (!locationData || !weatherData) throw new Error('Data not available');
-      const temp = currentUnit === 'C'
-        ? weatherData.currently.apparentTemperature
-        : formatService.celsiusFahrenheit(weatherData.currently.apparentTemperature);
       return tipsService.getTips({
-        temperature: Math.round(temp),
-        temperatureUnit: currentUnit as 'C' | 'F',
+        temperature: Math.round(weatherData.currently.apparentTemperature),
+        temperatureUnit: 'C',
         weatherSummary: weatherData.currently.summary,
         cityName: locationData.cityName,
         stateName: locationData.stateName,
@@ -185,7 +183,7 @@ const AppContent: FC = () => {
             </div>
 
             {/* Weather Content */}
-            <div className="px-4 py-6">
+            <div className="px-4 py-6 pb-4">
               {/* Location */}
               {locationData && formatService && (
                 <LocationDisplay locationData={locationData} formatService={formatService} theme={theme} />

@@ -8,6 +8,23 @@ interface WeatherTipsProps {
   theme?: 'amber' | 'green';
 }
 
+// ASCII Brain icon for AI section
+const AsciiBrain = ({ color, glow }: { color: string; glow: string }) => (
+  <pre
+    className="text-xs leading-none font-mono inline-block"
+    style={{
+      color,
+      textShadow: `0 0 8px ${glow}`,
+    }}
+  >
+{`  ,---.
+ /  ○  \\
+| ~   ~ |
+ \\ ○○○ /
+  '---'`}
+  </pre>
+);
+
 const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error, theme = 'amber' }) => {
   // Use cyan/teal accent to contrast with amber theme and make AI tips pop
   const accentColor = '#00d4ff';
@@ -23,7 +40,7 @@ const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error, theme = 'am
 
   if (isLoading) {
     return (
-      <div className="mt-6 pt-4">
+      <div className="mt-6">
         <div
           className="p-4 border"
           style={{
@@ -49,7 +66,7 @@ const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error, theme = 'am
   }
 
   return (
-    <div className="mt-6 pt-4">
+    <div className="mt-6">
       {/* AI Tips Container with accent border */}
       <div
         className="border relative overflow-hidden"
@@ -61,22 +78,16 @@ const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error, theme = 'am
       >
         {/* Header bar */}
         <div
-          className="px-4 py-2 border-b flex items-center justify-between"
+          className="px-4 py-3 border-b flex items-center gap-4"
           style={{
             borderColor: `${accentColor}40`,
             background: 'rgba(0, 212, 255, 0.1)',
           }}
         >
-          <div className="font-mono text-sm flex items-center gap-2">
+          <AsciiBrain color={accentColor} glow={accentGlow} />
+          <div className="flex flex-col">
             <span
-              style={{
-                color: accentColor,
-                textShadow: `0 0 10px ${accentGlow}`,
-              }}
-            >
-              ◆
-            </span>
-            <span
+              className="font-mono text-sm"
               style={{
                 color: accentColor,
                 textShadow: `0 0 8px ${accentGlow}`,
@@ -84,6 +95,12 @@ const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error, theme = 'am
               }}
             >
               WHAT SHOULD I DO TODAY?
+            </span>
+            <span
+              className="font-mono text-xs mt-1"
+              style={{ color: accentColorDim }}
+            >
+              AI-powered recommendations
             </span>
           </div>
         </div>
