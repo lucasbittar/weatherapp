@@ -5,19 +5,25 @@ I started it 10 years ago as a General Assembly class project and it's become my
 
 I've written it in vanilla JS (spaghetti code) with Bower and Grunt as build tools, later on I converted it into a modular code approach using jQuery and finally with the help of Jules by Google I was able to rewrite the entire app in React and TypeScript using the latests tools there are out there.
 
-<h1 align="center">
-  <img alt="WeatherApp" src="assets/screen-1.jpg" />
-</h1>
-
 ### Project link ###
 [Launch Project]
 
 ### Update ###
 
-#### Sometime back in 2020
-* Complete code refactor using Modular Javascript Design Pattern
-* Replace Grunt with webpack
-* Improved search image API
+#### Jan 2026
+* Complete UI revamp with retro CRT terminal aesthetic
+* Add multi-line ASCII art weather icons
+* Implement unified CSS border frame design
+* Add amber phosphor color theme with colorful accents
+* Integrate Gemini AI for personalized weather-based recommendations
+  - What to wear suggestions
+  - Activity recommendations
+  - Nearby points of interest
+* Add colorful ATMOSPHERIC_SENSORS display (wind, humidity, actual temp)
+* Add live time indicator with pulsing dot
+* Improve mobile experience with scrollable content
+* Add favicon set with multi-device support (iOS, Android, desktop)
+* Switch from pnpm to npm
 
 #### Jun 2025
 * Complete rewrite in React and TypeScript
@@ -25,6 +31,11 @@ I've written it in vanilla JS (spaghetti code) with Bower and Grunt as build too
 * Implementing recently learned code best practices at Frontend Masters workshop by the amazing David K.
 * Add unit tests to services logic
 * Update GeoLocation API provider from AccuWeather to OpenCage
+
+#### Sometime back in 2020
+* Complete code refactor using Modular Javascript Design Pattern
+* Replace Grunt with webpack
+* Improved search image API
 
 ### TO-DO
 * ~~Find a good way to deal with env files in GH-pages~~

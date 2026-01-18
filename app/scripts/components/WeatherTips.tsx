@@ -1,14 +1,38 @@
-import React, { FC, useState } from 'react';
+import { FC } from 'react';
 import { TipsResponse } from '../services/tips.service';
 
 interface WeatherTipsProps {
   tips: TipsResponse;
   isLoading: boolean;
   error: string | null;
+  theme?: 'amber' | 'green';
 }
 
-const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+// ASCII Brain icon for AI section
+const AsciiBrain = ({ color, glow }: { color: string; glow: string }) => (
+  <pre
+    className="text-xs leading-none font-mono inline-block"
+    style={{
+      color,
+      textShadow: `0 0 8px ${glow}`,
+    }}
+  >
+{`  ,---.
+ /  ○  \\
+| ~   ~ |
+ \\ ○○○ /
+  '---'`}
+  </pre>
+);
+
+const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error, theme = 'amber' }) => {
+  // Use cyan/teal accent to contrast with amber theme and make AI tips pop
+  const accentColor = '#00d4ff';
+  const accentColorDim = '#00a3c4';
+  const accentGlow = 'rgba(0, 212, 255, 0.6)';
+
+  // Keep some theme awareness for harmony
+  const dimColor = theme === 'amber' ? 'text-crt-amberDim' : 'text-crt-greenDim';
 
   if (error) {
     return null;
@@ -16,13 +40,21 @@ const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error }) => {
 
   if (isLoading) {
     return (
-      <div className="tips-container mt-6 w-full max-w-md mx-auto px-4 z-10 relative">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" />
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse delay-75" />
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse delay-150" />
-            <span className="text-white/80 text-sm ml-2">Getting AI tips...</span>
+      <div className="mt-6">
+        <div
+          className="p-4 border"
+          style={{
+            borderColor: accentColorDim,
+            background: 'rgba(0, 212, 255, 0.03)',
+          }}
+        >
+          <div className="font-mono text-sm mb-3" style={{ color: accentColor }}>
+            <span>{'>'}</span> QUERYING AI_ASSISTANT...
+          </div>
+          <div className="font-mono text-xs flex items-center gap-2" style={{ color: accentColorDim }}>
+            <span className="inline-block animate-pulse">█</span>
+            <span>Processing weather intelligence</span>
+            <span className="animate-pulse">...</span>
           </div>
         </div>
       </div>
@@ -34,84 +66,111 @@ const WeatherTips: FC<WeatherTipsProps> = ({ tips, isLoading, error }) => {
   }
 
   return (
-    <div className="tips-container mt-6 w-full max-w-md mx-auto px-4 z-10 relative">
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 shadow-lg">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full p-4 flex items-center justify-between text-white hover:bg-white/5 transition-colors"
-        >
-          <span className="font-semibold text-lg">AI Weather Tips</span>
-          <svg
-            className={`w-5 h-5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
-
+    <div className="mt-6">
+      {/* AI Tips Container with accent border */}
+      <div
+        className="border relative overflow-hidden"
+        style={{
+          borderColor: accentColor,
+          background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(0, 212, 255, 0.02) 100%)',
+          boxShadow: `0 0 20px rgba(0, 212, 255, 0.15), inset 0 0 30px rgba(0, 212, 255, 0.03)`,
+        }}
+      >
+        {/* Header bar */}
         <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className="px-4 py-3 border-b flex items-center gap-4"
+          style={{
+            borderColor: `${accentColor}40`,
+            background: 'rgba(0, 212, 255, 0.1)',
+          }}
         >
-          <div className="px-4 pb-4 space-y-4">
-            {/* Outfit Section */}
-            <div>
-              <h4 className="text-white/90 font-semibold text-sm uppercase tracking-wide mb-2 flex items-center">
-                <span className="mr-2">👕</span> What to Wear
-              </h4>
-              <ul className="space-y-1">
-                {tips.outfit.map((item, index) => (
-                  <li
-                    key={index}
-                    className="text-white/80 text-sm pl-6 relative before:content-['•'] before:absolute before:left-2 before:text-white/40"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <AsciiBrain color={accentColor} glow={accentGlow} />
+          <div className="flex flex-col">
+            <span
+              className="font-mono text-sm"
+              style={{
+                color: accentColor,
+                textShadow: `0 0 8px ${accentGlow}`,
+                letterSpacing: '0.05em',
+              }}
+            >
+              WHAT SHOULD I DO TODAY?
+            </span>
+            <span
+              className="font-mono text-xs mt-1"
+              style={{ color: accentColorDim }}
+            >
+              AI-powered recommendations
+            </span>
+          </div>
+        </div>
 
-            {/* Activities Section */}
-            <div>
-              <h4 className="text-white/90 font-semibold text-sm uppercase tracking-wide mb-2 flex items-center">
-                <span className="mr-2">🎯</span> Activities
-              </h4>
-              <ul className="space-y-1">
-                {tips.activities.map((activity, index) => (
-                  <li
-                    key={index}
-                    className="text-white/80 text-sm pl-6 relative before:content-['•'] before:absolute before:left-2 before:text-white/40"
-                  >
-                    {activity}
-                  </li>
-                ))}
-              </ul>
+        {/* Content */}
+        <div className="p-4 space-y-4">
+          {/* Outfit Section */}
+          <div>
+            <div
+              className="font-mono text-xs mb-2 flex items-center gap-2"
+              style={{ color: accentColor }}
+            >
+              <span style={{ textShadow: `0 0 6px ${accentGlow}` }}>►</span>
+              <span className="uppercase tracking-wider">WEAR_CONFIG</span>
             </div>
+            <ul className="space-y-1 pl-4">
+              {tips.outfit.map((item, index) => (
+                <li
+                  key={index}
+                  className={`font-mono text-md ${dimColor} flex items-start gap-2`}
+                >
+                  <span style={{ color: accentColorDim }}>-</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            {/* Points of Interest Section */}
-            <div>
-              <h4 className="text-white/90 font-semibold text-sm uppercase tracking-wide mb-2 flex items-center">
-                <span className="mr-2">📍</span> Places to Visit
-              </h4>
-              <ul className="space-y-1">
-                {tips.pointsOfInterest.map((poi, index) => (
-                  <li
-                    key={index}
-                    className="text-white/80 text-sm pl-6 relative before:content-['•'] before:absolute before:left-2 before:text-white/40"
-                  >
-                    {poi}
-                  </li>
-                ))}
-              </ul>
+          {/* Activities Section */}
+          <div>
+            <div
+              className="font-mono text-xs mb-2 flex items-center gap-2"
+              style={{ color: accentColor }}
+            >
+              <span style={{ textShadow: `0 0 6px ${accentGlow}` }}>►</span>
+              <span className="uppercase tracking-wider">ACTIVITY_SUGGESTIONS</span>
             </div>
+            <ul className="space-y-1 pl-4">
+              {tips.activities.map((activity, index) => (
+                <li
+                  key={index}
+                  className={`font-mono text-md ${dimColor} flex items-start gap-2`}
+                >
+                  <span style={{ color: accentColorDim }}>-</span>
+                  <span>{activity}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Points of Interest Section */}
+          <div>
+            <div
+              className="font-mono text-xs mb-2 flex items-center gap-2"
+              style={{ color: accentColor }}
+            >
+              <span style={{ textShadow: `0 0 6px ${accentGlow}` }}>►</span>
+              <span className="uppercase tracking-wider">NEARBY_LOCATIONS</span>
+            </div>
+            <ul className="space-y-1 pl-4">
+              {tips.pointsOfInterest.map((poi, index) => (
+                <li
+                  key={index}
+                  className={`font-mono text-md ${dimColor} flex items-start gap-2`}
+                >
+                  <span style={{ color: accentColorDim }}>-</span>
+                  <span>{poi}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

@@ -63,7 +63,7 @@ Respond ONLY with valid JSON in this exact format, no markdown or code blocks:
 {"outfit":["item1","item2","item3"],"activities":["activity1","activity2","activity3"],"pointsOfInterest":["place1","place2","place3"]}`;
 
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {
