@@ -23,8 +23,7 @@ const UnitConverter: FC<UnitConverterProps> = ({
     : 'border-crt-greenDim/40 text-crt-greenDim hover:border-crt-green hover:text-crt-green';
 
   return (
-    <div className="flex items-center justify-center gap-4 my-4 font-mono">
-      <span className={`${dimClass} text-sm`}>{'>'} UNIT:</span>
+    <div className="flex items-center justify-center gap-4 my-4 mt-2 font-mono">
 
       <button
         className={`px-4 py-2 border transition-all duration-200 text-sm ${
