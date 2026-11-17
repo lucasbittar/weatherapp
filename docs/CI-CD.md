@@ -117,7 +117,7 @@ Vercel project (`VITE_PEXELS_API_KEY`, `VITE_OPEN_CAGE_API_KEY`,
 
 | Secret | Where to find it |
 | --- | --- |
-| `VERCEL_TOKEN` | vercel.com → Account Settings → **Tokens** → Create. Scope it to your team, and give it an expiration. |
+| `VERCEL_TOKEN` | vercel.com → Account Settings → **Tokens** → Create. Set **Scope** to the team that owns the project (here: *Personal Projects*), and give it an expiration. ⚠️ A token without that team in its scope is still *valid*, so you won't get an auth error. Instead `vercel pull` fails with "Could not retrieve Project Settings" (see Troubleshooting). |
 | `VERCEL_ORG_ID` | `orgId` in your local `.vercel/project.json` (created by `vercel link`). |
 | `VERCEL_PROJECT_ID` | `projectId` in the same file. |
 
@@ -145,9 +145,46 @@ thing to demo.
 
 ### 4. (Optional) Require green CI before merging
 
-Repo → **Settings → Branches → Add rule** for `master` → *Require status
-checks to pass* → select **Typecheck, test & build**. Now GitHub won't let
-a PR merge until the tests pass.
+GitHub now does this with **rulesets** (the older "Branches → branch
+protection rules" page is being phased out and may not appear in the sidebar).
+
+Repo → **Settings → Rules → Rulesets → New ruleset → New branch ruleset**:
+
+1. **Name:** `master`. **Enforcement status:** Active.
+2. **Target branches → Add target → Include default branch.**
+3. Tick **Require status checks to pass** → **Add checks** → type
+   `Typecheck, test & build` and pick it.
+
+   > The check only shows up in that search after the workflow has run at
+   > least once (e.g. on your first PR).
+4. Leave *Require a pull request before merging* → *Required approvals* at
+   **0** on a solo project; you can't approve your own PRs.
+5. **Create.**
+
+Now the PR's merge button stays disabled until the tests pass.
+
+Prefer the terminal? The same ruleset via the API:
+
+```sh
+gh api -X POST repos/{owner}/{repo}/rulesets --input - <<'EOF'
+{
+  "name": "master",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["~DEFAULT_BRANCH"], "exclude": [] } },
+  "rules": [
+    { "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "required_status_checks": [{ "context": "Typecheck, test & build", "integration_id": 15368 }]
+      } }
+  ]
+}
+EOF
+```
+
+(`15368` is the GitHub Actions app's ID; it says "this check must come from
+Actions", so nothing else can fake a green status.)
 
 ## Running the pipeline locally
 
@@ -163,8 +200,10 @@ actionlint                 # lint the workflow YAML (brew install actionlint)
 | Symptom | Likely cause |
 | --- | --- |
 | `npm ci` fails with "lock file out of sync" | You changed `package.json` without updating the lock file. Run `npm install` and commit `package-lock.json`. |
-| Deploy step: "No existing credentials found" / 403 | `VERCEL_TOKEN` missing, expired or lacking access to the team. |
-| Deploy step: "Project not found" | `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` wrong or swapped. |
+| Deploy step: "No existing credentials found" / "token is not valid" | `VERCEL_TOKEN` missing, mistyped or expired. |
+| Deploy step: **"Could not retrieve Project Settings"** | The token works, but the project can't be found with it. Check in this order: **(1) token scope:** recreate it with the project's team as *Scope*. This was the actual cause the first time this pipeline ran. **(2) IDs:** `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` swapped, or pasted with JSON quotes. Set them straight from the file: `jq -j .orgId .vercel/project.json \| gh secret set VERCEL_ORG_ID` (same with `.projectId`). |
+| No workflow run at all on a PR | The PR has **merge conflicts**: `pull_request` runs build on a test merge commit, which GitHub can't create while there are conflicts. Merge `master` into your branch and push. |
+| Preview URL redirects (302) to a Vercel login | Vercel *Deployment Protection* on previews. Expected; open it while logged in to Vercel. |
 | Preview job skipped on a PR | PR is from a fork (no secrets), or the `test` job failed. |
 | App deploys but API keys are empty | Env vars not set for that environment (Preview vs Production) in Vercel. |
 | A `*.test` URL shows up under `/api/` | A test file in `api/` isn't covered by `.vercelignore`. |
