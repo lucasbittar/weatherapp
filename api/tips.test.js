@@ -40,6 +40,17 @@ function createMockResponse() {
   return res;
 }
 
+const HOST = 'weatherapp.vercel.app';
+
+/** A request as our own frontend would send it (same-origin POST). */
+function createRequest({ body = validBody, method = 'POST', headers = {} } = {}) {
+  return {
+    method,
+    body,
+    headers: { host: HOST, origin: `https://${HOST}`, ...headers },
+  };
+}
+
 const validBody = {
   temperature: 22,
   temperatureUnit: 'C',
@@ -56,6 +67,8 @@ const validTips = {
   pointsOfInterest: ['Parks', 'Viewpoints', 'Outdoor cafes'],
 };
 
+const UNAVAILABLE = { error: 'Tips are temporarily unavailable' };
+
 /** Shapes a fake Gemini API response around the given model text. */
 function geminiReply(text) {
   return {
@@ -66,97 +79,217 @@ function geminiReply(text) {
 
 describe('POST /api/tips', () => {
   let fetchMock;
+  let consoleError;
 
   beforeEach(() => {
     vi.stubEnv('GEMINI_API_KEY', 'test-key');
     fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    // Keep the test output clean: the handler logs errors on purpose.
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Keep the test output clean (the handler logs errors on purpose), and
+    // keep a handle on the spy to check *what* gets logged.
+    consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('answers CORS preflight requests with 200', async () => {
-    const res = createMockResponse();
-    await handler({ method: 'OPTIONS' }, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.headers['Access-Control-Allow-Origin']).toBe('*');
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('rejects non-POST methods with 405', async () => {
-    const res = createMockResponse();
-    await handler({ method: 'GET' }, res);
-
-    expect(res.statusCode).toBe(405);
-    expect(res.body).toEqual({ error: 'Method not allowed' });
-  });
-
-  it('returns 500 when GEMINI_API_KEY is not configured', async () => {
-    vi.stubEnv('GEMINI_API_KEY', '');
-    const res = createMockResponse();
-    await handler({ method: 'POST', body: validBody }, res);
-
-    expect(res.statusCode).toBe(500);
-    expect(res.body).toEqual({ error: 'GEMINI_API_KEY not configured' });
-  });
-
-  // `it.each` with one row per missing field: the same test, three inputs.
-  it.each(['temperature', 'weatherSummary', 'cityName'])(
-    'returns 400 when "%s" is missing',
-    async (field) => {
+  describe('happy path', () => {
+    it('returns the tips parsed from the Gemini response', async () => {
+      fetchMock.mockResolvedValue(geminiReply(JSON.stringify(validTips)));
       const res = createMockResponse();
-      const body = { ...validBody, [field]: undefined };
-      await handler({ method: 'POST', body }, res);
+
+      await handler(createRequest(), res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual(validTips);
+    });
+
+    it('sends the API key in a header, not in the URL (URLs end up in logs)', async () => {
+      fetchMock.mockResolvedValue(geminiReply(JSON.stringify(validTips)));
+
+      await handler(createRequest(), createMockResponse());
+
+      const [url, options] = fetchMock.mock.calls[0];
+      expect(url).not.toContain('test-key');
+      expect(options.headers['x-goog-api-key']).toBe('test-key');
+      expect(JSON.parse(options.body).contents[0].parts[0].text).toContain('Lisbon, Portugal');
+    });
+
+    it('strips ```json markdown fences the model sometimes adds', async () => {
+      fetchMock.mockResolvedValue(geminiReply('```json\n' + JSON.stringify(validTips) + '\n```'));
+      const res = createMockResponse();
+
+      await handler(createRequest(), res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual(validTips);
+    });
+
+    it('only returns the three expected fields, even if the model adds more', async () => {
+      fetchMock.mockResolvedValue(geminiReply(JSON.stringify({ ...validTips, extra: 'surprise' })));
+      const res = createMockResponse();
+
+      await handler(createRequest(), res);
+
+      expect(Object.keys(res.body)).toEqual(['outfit', 'activities', 'pointsOfInterest']);
+    });
+
+    // Regression test: the old `if (!temperature)` check treated 0 as missing.
+    it('accepts a temperature of 0°', async () => {
+      fetchMock.mockResolvedValue(geminiReply(JSON.stringify(validTips)));
+      const res = createMockResponse();
+
+      await handler(createRequest({ body: { ...validBody, temperature: 0 } }), res);
+
+      expect(res.statusCode).toBe(200);
+    });
+  });
+
+  describe('HTTP method & CORS', () => {
+    it('answers preflight with 204 and does NOT grant cross-origin access', async () => {
+      const res = createMockResponse();
+      await handler(createRequest({ method: 'OPTIONS' }), res);
+
+      expect(res.statusCode).toBe(204);
+      // No Access-Control-Allow-Origin header = browsers block other sites.
+      expect(res.headers['Access-Control-Allow-Origin']).toBeUndefined();
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('rejects non-POST methods with 405 and an Allow header', async () => {
+      const res = createMockResponse();
+      await handler(createRequest({ method: 'GET' }), res);
+
+      expect(res.statusCode).toBe(405);
+      expect(res.headers.Allow).toBe('POST');
+    });
+  });
+
+  describe('origin check', () => {
+    it('rejects requests from another website with 403', async () => {
+      const res = createMockResponse();
+      await handler(createRequest({ headers: { origin: 'https://evil.example' } }), res);
+
+      expect(res.statusCode).toBe(403);
+      expect(fetchMock).not.toHaveBeenCalled(); // no Gemini credits spent
+    });
+
+    it('rejects a malformed Origin header', async () => {
+      const res = createMockResponse();
+      await handler(createRequest({ headers: { origin: 'not a url' } }), res);
+
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('matches against x-forwarded-host when a proxy sets it', async () => {
+      fetchMock.mockResolvedValue(geminiReply(JSON.stringify(validTips)));
+      const res = createMockResponse();
+      await handler(
+        createRequest({
+          headers: { host: 'internal.host', 'x-forwarded-host': 'my-app.com', origin: 'https://my-app.com' },
+        }),
+        res
+      );
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('lets non-browser clients (no Origin header) through to validation', async () => {
+      fetchMock.mockResolvedValue(geminiReply(JSON.stringify(validTips)));
+      const res = createMockResponse();
+      await handler({ method: 'POST', body: validBody, headers: { host: HOST } }, res);
+
+      // These are throttled by the Vercel Firewall rate limit, not here.
+      expect(res.statusCode).toBe(200);
+    });
+  });
+
+  describe('input validation', () => {
+    // `it.each` with one row per bad input: the same test, many cases.
+    it.each([
+      ['temperature missing', { temperature: undefined }],
+      ['temperature as a string', { temperature: '22' }],
+      ['temperature NaN', { temperature: NaN }],
+      ['invalid unit', { temperatureUnit: 'K' }],
+      ['weatherSummary missing', { weatherSummary: undefined }],
+      ['weatherSummary blank', { weatherSummary: '   ' }],
+      ['cityName missing', { cityName: undefined }],
+      ['cityName too long', { cityName: 'x'.repeat(101) }],
+      ['countryName too long', { countryName: 'x'.repeat(101) }],
+      ['stateName not a string', { stateName: 42 }],
+      ['humidity not a number', { humidity: 'humid' }],
+      ['windSpeed not a number', { windSpeed: {} }],
+    ])('returns 400 for %s', async (_label, override) => {
+      const res = createMockResponse();
+      await handler(createRequest({ body: { ...validBody, ...override } }), res);
 
       expect(res.statusCode).toBe(400);
-      expect(fetchMock).not.toHaveBeenCalled();
-    }
-  );
+      expect(res.body.error).toEqual(expect.any(String));
+      expect(fetchMock).not.toHaveBeenCalled(); // bad input never costs tokens
+    });
 
-  it('returns the tips parsed from the Gemini response', async () => {
-    fetchMock.mockResolvedValue(geminiReply(JSON.stringify(validTips)));
-    const res = createMockResponse();
+    it('returns 400 when there is no body', async () => {
+      const res = createMockResponse();
+      // `null`, not `undefined`: undefined would trigger the default parameter
+      // in createRequest() and silently send a valid body.
+      await handler(createRequest({ body: null }), res);
 
-    await handler({ method: 'POST', body: validBody }, res);
-
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual(validTips);
-
-    // Also check *what we sent* to Gemini: the API key and city made it in.
-    const [url, options] = fetchMock.mock.calls[0];
-    expect(url).toContain('key=test-key');
-    expect(JSON.parse(options.body).contents[0].parts[0].text).toContain('Lisbon, Portugal');
+      expect(res.statusCode).toBe(400);
+    });
   });
 
-  it('strips ```json markdown fences the model sometimes adds', async () => {
-    fetchMock.mockResolvedValue(geminiReply('```json\n' + JSON.stringify(validTips) + '\n```'));
-    const res = createMockResponse();
+  // Every failure on our side returns the same generic 503. The real reason is
+  // logged server-side, so we assert BOTH: what the client sees, and what's logged.
+  describe('server-side failures (generic 503, details only in logs)', () => {
+    it('when GEMINI_API_KEY is not configured', async () => {
+      vi.stubEnv('GEMINI_API_KEY', '');
+      const res = createMockResponse();
+      await handler(createRequest(), res);
 
-    await handler({ method: 'POST', body: validBody }, res);
+      expect(res.statusCode).toBe(503);
+      expect(res.body).toEqual(UNAVAILABLE);
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('GEMINI_API_KEY'));
+    });
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual(validTips);
-  });
+    it('when Gemini rejects the request (e.g. out of credits)', async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 402,
+        text: async () => '{"error":{"message":"Your prepayment credits are depleted."}}',
+      });
+      const res = createMockResponse();
+      await handler(createRequest(), res);
 
-  it('returns 500 when the Gemini API call fails', async () => {
-    fetchMock.mockResolvedValue({ ok: false, status: 429, text: async () => 'rate limited' });
-    const res = createMockResponse();
+      expect(res.statusCode).toBe(503);
+      expect(res.body).toEqual(UNAVAILABLE); // no upstream details leaked
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('prepayment credits are depleted')
+      );
+    });
 
-    await handler({ method: 'POST', body: validBody }, res);
+    it('when the network call itself throws', async () => {
+      fetchMock.mockRejectedValue(new Error('ECONNRESET'));
+      const res = createMockResponse();
+      await handler(createRequest(), res);
 
-    expect(res.statusCode).toBe(500);
-    expect(res.body.error).toBe('Failed to generate tips');
-    expect(res.body.details).toContain('rate limited');
-  });
+      expect(res.statusCode).toBe(503);
+      expect(res.body).toEqual(UNAVAILABLE);
+    });
 
-  it('returns 500 when the model replies with an incomplete structure', async () => {
-    fetchMock.mockResolvedValue(geminiReply(JSON.stringify({ outfit: ['Hat'] })));
-    const res = createMockResponse();
+    it('when the model replies with invalid JSON', async () => {
+      fetchMock.mockResolvedValue(geminiReply('Sure! Here are some tips: wear a hat.'));
+      const res = createMockResponse();
+      await handler(createRequest(), res);
 
-    await handler({ method: 'POST', body: validBody }, res);
+      expect(res.statusCode).toBe(503);
+      expect(res.body).toEqual(UNAVAILABLE);
+    });
 
-    expect(res.statusCode).toBe(500);
-    expect(res.body.details).toBe('Invalid response structure from AI');
+    it('when the model replies with an incomplete structure', async () => {
+      fetchMock.mockResolvedValue(geminiReply(JSON.stringify({ outfit: ['Hat'] })));
+      const res = createMockResponse();
+      await handler(createRequest(), res);
+
+      expect(res.statusCode).toBe(503);
+      expect(consoleError).toHaveBeenCalledWith(expect.any(String), 'Invalid response structure from AI');
+    });
   });
 });
