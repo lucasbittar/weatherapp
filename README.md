@@ -21,6 +21,7 @@ npm run ci             # typecheck + tests with coverage + build (what CI runs)
 
 ### Testing & CI/CD ###
 * Tests: [Vitest](https://vitest.dev) + React Testing Library. See [docs/TESTING.md](docs/TESTING.md)
+* API hardening (rate limiting, origin checks, error handling): see [docs/API-SECURITY.md](docs/API-SECURITY.md)
 * Pipeline: GitHub Actions runs typecheck, tests and build on every PR and push to `master`, then deploys to Vercel (preview URL for PRs, production for `master`). See [docs/CI-CD.md](docs/CI-CD.md)
 
 ### Update ###
