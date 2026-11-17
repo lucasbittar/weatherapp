@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock, type MockInstance } from 'vitest';
 import weatherService, { mapWeatherCode } from './weather.service';
 
 // Replicating interfaces for test clarity, though some might be implicitly typed
@@ -37,20 +38,20 @@ interface OpenMeteoResponse {
 }
 
 describe('WeatherService', () => {
-  let mockFetch: jest.Mock;
-  let mockConsoleLog: jest.SpyInstance;
-  let mockConsoleError: jest.SpyInstance;
+  let mockFetch: Mock;
+  let mockConsoleLog: MockInstance;
+  let mockConsoleError: MockInstance;
 
   beforeEach(() => {
-    mockFetch = jest.fn();
-    global.fetch = mockFetch;
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch); // reset after each test via `unstubGlobals`
 
-    mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
-    mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+    mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('mapWeatherCode', () => {

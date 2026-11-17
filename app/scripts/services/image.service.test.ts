@@ -1,36 +1,38 @@
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock, type MockInstance } from 'vitest';
 import imageService, { ImageDetails, PexelsPhoto } from './image.service';
 
 describe('ImageService', () => {
-  let mockFetch: jest.Mock;
-  let mockConsoleLog: jest.SpyInstance;
-  let mockConsoleError: jest.SpyInstance;
-  let mockMathRandom: jest.SpyInstance;
+  let mockFetch: Mock;
+  let mockConsoleLog: MockInstance;
+  let mockConsoleError: MockInstance;
+  let mockMathRandom: MockInstance;
 
   const mockApiKeyValue = 'TEST_PEXELS_API_KEY';
 
   beforeEach(() => {
-    mockFetch = jest.fn();
-    global.fetch = mockFetch;
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch); // reset after each test via `unstubGlobals`
 
-    mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
-    mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-    mockMathRandom = jest.spyOn(Math, 'random').mockReturnValue(0); // Always pick first photo
+    mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+    mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockMathRandom = vi.spyOn(Math, 'random').mockReturnValue(0); // Always pick first photo
 
-    // Set up environment variables for each test
-    process.env.PEXELS_API_KEY = mockApiKeyValue;
+    // Fake the Vite env var the service reads (`import.meta.env.VITE_PEXELS_API_KEY`).
+    // NOTE: under Jest these tests set `process.env.PEXELS_API_KEY`, which the
+    // service never reads. `vi.stubEnv` patches `import.meta.env` for real, and
+    // `unstubEnvs: true` in vite.config.ts resets it after every test.
+    vi.stubEnv('VITE_PEXELS_API_KEY', mockApiKeyValue);
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    // Clear environment variables after each test
-    delete process.env.PEXELS_API_KEY;
+    vi.restoreAllMocks();
   });
 
   describe('searchImage', () => {
     const searchTerm = 'weather';
 
     it('should reject with an error if PEXELS_API_KEY is not defined', async () => {
-      delete process.env.PEXELS_API_KEY;
+      vi.stubEnv('VITE_PEXELS_API_KEY', ''); // simulate a missing key
       await expect(imageService.search(searchTerm)).rejects.toThrow(
         'PEXELS_API_KEY environment variable is not defined.'
       );

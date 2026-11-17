@@ -1,0 +1,4 @@
+# Files Vercel should never upload or build.
+# Every file in api/ becomes a serverless function, so without this the test
+# file would be deployed as a public endpoint at /api/tips.test.
+api/**/*.test.js

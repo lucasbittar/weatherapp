@@ -1,15 +1,16 @@
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import tipsService, { TipsRequest, TipsResponse } from './tips.service';
 
 describe('TipsService', () => {
-  let mockFetch: jest.Mock;
+  let mockFetch: Mock;
 
   beforeEach(() => {
-    mockFetch = jest.fn();
-    global.fetch = mockFetch;
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch); // reset after each test via `unstubGlobals`
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('getTips', () => {
