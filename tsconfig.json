@@ -24,14 +24,12 @@
     "forceConsistentCasingInFileNames": true,
 
     /* Types */
-    "types": ["vite/client"]
+    "types": ["vite/client", "@testing-library/jest-dom/vitest"]
   },
   "include": [
     "./app/scripts/**/*"
   ],
   "exclude": [
-    "./api/**/*",
-    "**/*.test.ts",
-    "**/*.test.tsx"
+    "./api/**/*"
   ]
 }

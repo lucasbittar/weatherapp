@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock, type MockInstance } from 'vitest';
 import locationService from './location.service';
 
 // Replicating interfaces here as they are not exported from the service
@@ -29,39 +30,40 @@ interface OpenCageLocationResponse {
 }
 
 describe('LocationService', () => {
-  let mockFetch: jest.Mock;
-  let mockGetCurrentPosition: jest.Mock;
+  let mockFetch: Mock;
+  let mockGetCurrentPosition: Mock;
   let originalGeolocation: Geolocation | undefined;
 
-  let mockConsoleLog: jest.SpyInstance;
-  let mockConsoleError: jest.SpyInstance;
-  let mockConsoleWarn: jest.SpyInstance;
+  let mockConsoleLog: MockInstance;
+  let mockConsoleError: MockInstance;
+  let mockConsoleWarn: MockInstance;
 
   const mockOpenCageApiKey = 'TEST_OPEN_CAGE_API_KEY';
 
   beforeEach(() => {
-    mockFetch = jest.fn();
-    global.fetch = mockFetch;
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch); // reset after each test via `unstubGlobals`
 
-    mockGetCurrentPosition = jest.fn();
+    mockGetCurrentPosition = vi.fn();
     originalGeolocation = navigator.geolocation;
     // @ts-ignore
     navigator.geolocation = {
       getCurrentPosition: mockGetCurrentPosition,
     };
 
-    mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
-    mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-    mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+    mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    process.env.OPEN_CAGE_API_KEY = mockOpenCageApiKey;
+    // Fake the Vite env var the service reads (`import.meta.env.VITE_OPEN_CAGE_API_KEY`).
+    // Reset automatically after each test thanks to `unstubEnvs: true` in vite.config.ts.
+    vi.stubEnv('VITE_OPEN_CAGE_API_KEY', mockOpenCageApiKey);
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
     // @ts-ignore
     navigator.geolocation = originalGeolocation;
-    delete process.env.OPEN_CAGE_API_KEY;
   });
 
   describe('getLocationCoordinates (locationService.getCoordinates)', () => {

@@ -31,7 +31,7 @@ const WeatherDescription: FC<WeatherDescriptionProps> = ({ weatherData, theme })
   const dimClass = theme === 'amber' ? 'text-crt-amberDim' : 'text-crt-greenDim';
 
   return (
-    <div className="font-mono text-center my-6">
+    <div className="font-mono text-center my-6 mb-4">
       {/* ASCII Weather Icon */}
       <div className="flex justify-center mb-4">
         <AsciiWeatherIcon

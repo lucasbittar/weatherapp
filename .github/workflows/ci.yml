@@ -1,0 +1,210 @@
+# =============================================================================
+# CI/CD pipeline for weatherapp
+#
+#   ┌──────────────┐     PR?   ┌──────────────────┐
+#   │     test     │──────────▶│  deploy-preview  │ → comments preview URL on PR
+#   │ typecheck    │           └──────────────────┘
+#   │ unit tests   │  master?  ┌──────────────────┐
+#   │ build        │──────────▶│ deploy-production│ → https://<your-app>.vercel.app
+#   └──────────────┘           └──────────────────┘
+#
+# Deploy jobs only run if `test` passes ("needs: test"). That is the whole
+# point of CI/CD: broken code can't reach users.
+#
+# Full walkthrough: docs/CI-CD.md
+# =============================================================================
+
+name: CI/CD
+
+# --- When does this workflow run? -------------------------------------------
+on:
+  push:
+    branches: [master] # every merge/push to master → test + production deploy
+  pull_request: # every PR (any target branch) → test + preview deploy
+  workflow_dispatch: # adds a "Run workflow" button in the Actions tab
+
+# --- Don't waste minutes on outdated commits --------------------------------
+# If you push twice to the same branch/PR quickly, the first run is cancelled.
+# Production deploys are never cancelled mid-flight (see the deploy job).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# --- Least privilege ----------------------------------------------------------
+# The GITHUB_TOKEN every job gets is read-only by default; jobs that need more
+# (e.g. commenting on a PR) ask for it explicitly.
+permissions:
+  contents: read
+
+# Used by the Vercel CLI in the deploy jobs. Values live in
+# Settings → Secrets and variables → Actions (see docs/CI-CD.md).
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  # ===========================================================================
+  # 1) TEST: the quality gate
+  # ===========================================================================
+  test:
+    name: Typecheck, test & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc # one source of truth for the Node version
+          cache: npm # caches ~/.npm keyed on package-lock.json
+
+      # `npm ci` (not `npm install`): installs *exactly* what's in
+      # package-lock.json and fails if it's out of sync with package.json.
+      # Reproducible installs are a CI must.
+      - name: Install dependencies
+        run: npm ci
+
+      # Each check is its own step so a failure is obvious at a glance in the UI.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run unit tests (with coverage)
+        run: npm run test:coverage
+        # `CI=true` is set automatically by GitHub Actions; vite.config.ts uses
+        # it to also write a JUnit report to reports/junit.xml.
+
+      # Writes a coverage table to the run's Summary page.
+      # `if: always()` = run even when tests failed, so you can still see it.
+      - name: Publish coverage summary
+        if: always()
+        run: node .github/scripts/coverage-summary.mjs >> "$GITHUB_STEP_SUMMARY"
+
+      # Artifacts are files you can download from the run page afterwards.
+      # Open coverage/index.html locally for the line-by-line report.
+      - name: Upload coverage & test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            coverage/
+            reports/
+          retention-days: 14
+
+      # Proves the production bundle builds. (The deploy jobs build again with
+      # the real Vercel env vars; this one catches build errors early, even on
+      # PRs from forks that can't access secrets.)
+      - name: Build
+        run: npm run build
+
+  # ===========================================================================
+  # 2a) DEPLOY PREVIEW: every pull request gets its own URL
+  # ===========================================================================
+  deploy-preview:
+    name: Deploy preview
+    needs: test # ← the gate: only runs if `test` succeeded
+    # Secrets aren't available to PRs from forks, so skip those.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write # needed to comment the preview URL on the PR
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.url }} # shows as a link in the GitHub UI
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # The 3-step Vercel CLI flow, all running on GitHub's machine:
+      #   pull   → downloads project settings + Preview env vars (API keys)
+      #   build  → runs `npm run build` locally into .vercel/output
+      #   deploy → uploads that prebuilt output; Vercel doesn't rebuild
+      # `npx vercel` uses the CLI version pinned in package.json.
+      - name: Pull Vercel environment
+        run: npx vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build with Vercel
+        run: npx vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel (preview)
+        id: deploy
+        # `vercel deploy` prints the deployment URL on stdout; we save it as a
+        # step output so later steps (and `environment.url`) can use it.
+        run: |
+          url=$(npx vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Comment preview URL on the PR
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            // Update one sticky comment instead of adding a new one per push.
+            const marker = '<!-- vercel-preview -->';
+            const body = `${marker}\n🚀 **Preview deployed:** ${process.env.PREVIEW_URL}\n\nCommit: \`${context.sha.slice(0, 7)}\``;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number });
+            const existing = comments.find((c) => c.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+  # ===========================================================================
+  # 2b) DEPLOY PRODUCTION: every push to master goes live
+  # ===========================================================================
+  deploy-production:
+    name: Deploy production
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Never run two production deploys at once, and never cancel one halfway.
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    # A GitHub "environment" gives you a deployment history page and, if you
+    # want, protection rules (e.g. require a manual approval before deploying).
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Pull Vercel environment
+        run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build with Vercel
+        run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel (production)
+        id: deploy
+        run: |
+          url=$(npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### ✅ Deployed to production: $url" >> "$GITHUB_STEP_SUMMARY"
