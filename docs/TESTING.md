@@ -138,7 +138,8 @@ A Vercel function is just `handler(request, response)`. The test builds a fake
 `response` whose methods are spies (`status`, `json`, `setHeader`), calls the
 handler, and checks the status code and body. Gemini is mocked via `fetch`.
 It covers the happy path, CORS preflight, validation (400), a missing API key,
-upstream failure and malformed AI output (500).
+upstream failure and malformed AI output (generic 503), and the
+Gemini request config (JSON mode, low thinking).
 
 ## Coverage: what the numbers mean
 

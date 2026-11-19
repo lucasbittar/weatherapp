@@ -112,6 +112,18 @@ describe('POST /api/tips', () => {
       expect(JSON.parse(options.body).contents[0].parts[0].text).toContain('Lisbon, Portugal');
     });
 
+    // Regression test: with Gemini 3.x, default "thinking" ate the whole token
+    // budget and truncated the JSON. Both settings below are needed.
+    it('asks for JSON output with low thinking so the answer fits the token budget', async () => {
+      fetchMock.mockResolvedValue(geminiReply(JSON.stringify(validTips)));
+
+      await handler(createRequest(), createMockResponse());
+
+      const { generationConfig } = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(generationConfig.responseMimeType).toBe('application/json');
+      expect(generationConfig.thinkingConfig).toEqual({ thinkingLevel: 'low' });
+    });
+
     it('strips ```json markdown fences the model sometimes adds', async () => {
       fetchMock.mockResolvedValue(geminiReply('```json\n' + JSON.stringify(validTips) + '\n```'));
       const res = createMockResponse();
