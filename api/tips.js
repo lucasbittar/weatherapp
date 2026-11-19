@@ -12,6 +12,12 @@
 
 const MAX_TEXT_LENGTH = 100;
 
+// Google retires old models: gemini-2.0-flash started returning 404 in Nov 2026.
+// When that happens again, the function logs show a 404 naming the replacement.
+// List the current ones with:
+//   curl -H "x-goog-api-key: $GEMINI_API_KEY" https://generativelanguage.googleapis.com/v1beta/models
+const GEMINI_MODEL = 'gemini-3.8-flash';
+
 // What clients see whenever something goes wrong on *our* side. 503 = "temporary,
 // try again later", which is honest for an out-of-credits or flaky upstream API.
 const UNAVAILABLE = { error: 'Tips are temporarily unavailable' };
@@ -127,7 +133,7 @@ Respond ONLY with valid JSON in this exact format, no markdown or code blocks:
 {"outfit":["item1","item2","item3"],"activities":["activity1","activity2","activity3"],"pointsOfInterest":["place1","place2","place3"]}`;
 
     const geminiResponse = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
       {
         method: 'POST',
         headers: {
@@ -144,6 +150,14 @@ Respond ONLY with valid JSON in this exact format, no markdown or code blocks:
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 500,
+            // Gemini 3.x models "think" before answering, and thinking tokens
+            // count against maxOutputTokens. On the default level the model
+            // used ~480 of our 500 tokens thinking and the JSON got cut off.
+            // A short list of tips needs no deep reasoning, so keep it low.
+            thinkingConfig: { thinkingLevel: 'low' },
+            // JSON mode: the model returns raw JSON, no ```json fences.
+            // (We still strip fences below, just in case.)
+            responseMimeType: 'application/json',
           },
         }),
       }
